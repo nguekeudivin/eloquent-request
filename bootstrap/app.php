@@ -13,7 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api/',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->alias([
+            'abilities' => CheckAbilities::class,
+            'ability' => CheckForAnyAbility::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
