@@ -7,9 +7,15 @@ use App\Http\Controllers\TypeStatutController;
 
 $endpoints = ['store', 'update', 'destroy'];
 
-Route::post("auth/login",[AuthController::class,"login"]);
 
-Route::get("auth/user",[AuthController::class,"user"]);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+    Route::get('/auth/user', [AuthController::class, 'me']);
+});
+
+// Route pour le login (NON protégée)
+Route::post('/auth/login', [AuthController::class, 'login']);
 
 Route::post('query',[QueryController::class,'index']);
 

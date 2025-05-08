@@ -25,9 +25,6 @@ return new class extends Migration
             $table->string('created_by_user_id', 36)->nullable();
             $table->string('updated_by_user_id', 36)->nullable();
 
-            // $table->foreign('created_by_user_id')->references('id')->on('users')->onDelete('SET NULL');
-            // $table->foreign('updated_by_user_id')->references('id')->on('users')->onDelete('SET NULL');
-
             $table->unique(['code_interne', 'contexte'], 'uk_code_contexte');
         });
     }

@@ -41,7 +41,7 @@ class TypeStatutController extends Controller
     public function update(Request $request, string $id)
     {
         $validator = Validator::make($request->all(), [
-            'code_interne' => 'string|max:50|unique:types_statut,code_interne,' . $id,
+            'code_interne' => 'string|max:50|unique:type_statuts,code_interne,' . $id,
             'libelle' => 'string|max:100',
             'description' => 'nullable|string|max:255',
             'contexte' => 'string|max:100',

@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
-use App\Services\TokenService;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -15,55 +14,73 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'username' => 'required',
-            'password' => 'required'
+            'username' => 'required|string',
+            'password' => 'required|string',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $validator->errors(),
-            ], 422);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $user = User::where("username", $request->input("username"))->first();
-        if ($user != null) {
-            if (password_verify($request->input("password"), $user->password)) {
-                $token = TokenService::generate([
-                    "username" => $user->username,
-                    "id" => $user->id
-                ], 3600 * 24); // 24h
-                return response()->json([
-                    'status' => 'success',
-                    'message' => 'Successfully logged in',
-                    'user' => $user,
-                    'token' => $token,
-                    'role' => $user->role
-                ]);
-            } else {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => "Mot de passe ou numero de téléphone invalide",
-                ], 401);
-            }
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'message' => "Mot de passe ou numero de téléphone invalide",
-            ], 401);
+        // Trouver l'utilisateur manuellement par username
+        $user = User::where('username', $request->username)->first();
+
+        // Vérifier si l'utilisateur existe ET si le mot de passe fourni correspond au haché
+        if (! $user || ! Hash::check($request->password, $user->password)) {
+            return response()->json(['message' => 'Identifiants invalides'], 401);
         }
+
+        // Authentification réussie (validation manuelle passée)
+        $user->load('administrateur', 'mutualiste');
+
+        // Déterminer le type d'utilisateur
+        $userType = null; // Type par défaut
+
+        if ($user->administrateur !== null) {
+            $userType = 'administrateur';
+        } elseif ($user->mutualiste !== null) {
+            $userType = 'mutualiste';
+        }
+
+        // Générer un nouveau token Sanctum pour cet utilisateur
+        $token = $user->createToken('api-token')->plainTextToken;
+
+        // Retourner les détails de l'utilisateur et le token
+        return response()->json([
+            'message' => 'Connexion réussie',
+            'user' => $user,
+            'user_type' => $userType,
+            'token' => $token,
+        ], 200);
     }
 
 
-    public function user(Request $request){
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
 
-        $user = TokenService::user($request);
-
-        if($user != null){
-            $user->computeBalance();
-        }
-
-        return response()->json($user,201);
+        return response()->json(['message' => 'Deconnexion reussie'], 200);
     }
 
+    public function me(Request $request)
+    {
+        $user = $request->user(); // Récupère l'utilisateur authentifié
+
+        // Charger les relations administrateur et mutualiste
+        $user->load('administrateur', 'mutualiste');
+
+        $userType = null;
+
+        if ($user->administrateur !== null) {
+            $userType = 'administrateur';
+        } elseif ($user->mutualiste !== null) {
+            $userType = 'mutualiste';
+        }
+
+        // Retourner les détails de l'utilisateur et son type
+        return response()->json([
+            'user' => $user,
+            'user_type' => $userType, // Ajouter le type d'utilisateur
+        ]);
+    }
 }
