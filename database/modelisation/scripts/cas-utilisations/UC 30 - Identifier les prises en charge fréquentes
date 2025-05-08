@@ -1,0 +1,60 @@
+@startuml
+title UC 30 - Identifier les prises en charge fréquentes
+
+' Déclaration explicite des swimlanes au début
+|Administrateur|
+|Interface Utilisateur (UI)|
+|Système de Reporting (Backend)|
+|Base de Données (DB)|
+
+start
+
+|Administrateur|
+:Accéder section reporting/statistiques;
+
+|Interface Utilisateur (UI)|
+:Afficher options de rapport Prises en Charge;
+
+|Administrateur|
+:Configurer rapport (Période, Critère, Nb éléments, etc.);
+:Déclencher génération rapport;
+
+|UI|
+:Envoyer paramètres rapport;
+
+|Système de Reporting (Backend)|
+:Recevoir paramètres rapport;
+:Valider paramètres;
+
+if (Paramètres valides) then (oui)
+  :Interroger DB pour prises en charge\n(sur période spécifiée);
+  |Base de Données (DB)|
+  :Retourner données prises en charge;
+  |Système de Reporting (Backend)|
+  :Agrèger données par catégorie;
+  :Calculer métrique (Fréquence ou Coût);
+  :Classer les catégories;
+
+  |UI|
+  :Recevoir données agrégées et classées;
+  :Afficher rapport (Liste classée ou Graphique);
+
+  |Administrateur|
+  :Consulter le rapport;
+
+  stop
+
+else (non - Alt A1 si pas de données suffisantes)
+  |Système de Reporting (Backend)|
+  :Indiquer paramètres invalides\nou données insuffisantes;
+  |UI|
+  :Afficher message d'erreur ou d'information (rapport non générable);
+
+  |Administrateur|
+  :Prendre connaissance du message;
+
+  stop
+
+endif
+
+@enduml

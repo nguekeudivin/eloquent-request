@@ -1,0 +1,37 @@
+title UC 12 - Afficher sa carte dématérialisée
+
+Acteurs: Mutualiste
+Lifelines:
+  Mutualiste
+  Interface Utilisateur (UI)
+  Système de Gestion Carte (Backend/Système)
+  Base de Données (DB)
+
+Flux:
+  Mutualiste -> UI: Se connecter à son espace personnel (UC 1)
+  Mutualiste -> UI: Naviguer vers la section "Ma Carte"
+
+  UI -> Système de Gestion Carte: Demander affichage carte dématérialisée [ID Mutualiste]
+
+  Système de Gestion Carte -> DB: Vérifier statut d'adhésion et éligibilité à la carte [ID Mutualiste]
+  DB --> Système de Gestion Carte: Retourner statut et éligibilité
+
+  Alt [Mutualiste éligible et carte disponible]
+    Système de Gestion Carte -> DB: Récupérer infos carte (Nom, Numéro Adhérent, Validité, Code QR/Barres, etc.) [ID Mutualiste]
+    DB --> Système de Gestion Carte: Retourner infos carte
+    Système de Gestion Carte -> Système de Gestion Carte: Potentiellement générer image/représentation carte
+    Système de Gestion Carte --> UI: Envoyer données/image de la carte
+    UI --> Mutualiste: Afficher la carte dématérialisée à l'écran
+
+  Alt [Mutualiste non éligible (Alt A1)]
+    Système de Gestion Carte --> UI: Indiquer non-éligibilité
+    UI --> Mutualiste: Afficher message ("Votre adhésion n'est pas active", etc.)
+
+  Alt [Carte non générée (Alt A2)]
+    Système de Gestion Carte --> UI: Indiquer carte non générée
+    UI --> Mutualiste: Afficher message ("Carte en cours de préparation", etc.)
+
+  Alt [Erreur Système lors affichage (Exc E1)]
+    Système de Gestion Carte -> Système de Gestion Carte: Enregistrer log d'erreur technique
+    Système de Gestion Carte --> UI: Indiquer Échec Technique
+    UI --> Mutualiste: Afficher message d'erreur générique ("Impossible d'afficher la carte")

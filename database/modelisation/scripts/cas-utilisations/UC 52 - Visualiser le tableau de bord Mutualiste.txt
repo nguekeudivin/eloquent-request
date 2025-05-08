@@ -1,0 +1,51 @@
+title UC 52 - Visualiser le tableau de bord (Mutualiste)
+
+Acteurs: Mutualiste
+Lifelines:
+  Mutualiste
+  Interface Utilisateur (UI)
+  Système Principal (Backend/Système)
+  Module Adhérents (Backend/Système)
+  Module Cotisations (Backend/Système)
+  Module Prestations (Backend/Système)
+  Module Prêts (Backend/Système)
+  Système Messagerie Interne (Backend/Système)
+  Système de Notification (Backend/Système)
+
+Flux:
+  Mutualiste -> UI: Se connecter à son espace personnel (UC 1)
+  Mutualiste -> UI: Accéder au Tableau de Bord (par défaut ou navigation)
+
+  UI -> Système Principal: Demander les informations de résumé pour le Tableau de Bord [ID Mutualiste]
+
+  System Principal -> Module Adhérents: Demander infos profil/statut [ID Mutualiste]
+  Module Adhérents --> System Principal: Retourner infos clés
+
+  System Principal -> Module Cotisations: Demander résumé cotisations (échéance, statut, solde) [ID Mutualiste]
+  Module Cotisations --> System Principal: Retourner résumé
+
+  System Principal -> Module Prestations: Demander résumé prises en charge (récentes, en cours, statut) [ID Mutualiste]
+  Module Prestations --> System Principal: Retourner résumé
+
+  System Principal -> Module Prêts: Demander résumé prêts (en cours, solde, échéance, alertes) [ID Mutualiste]
+  Module Prêts --> System Principal: Retourner résumé
+
+  System Principal -> Système Messagerie Interne: Demander indicateur messages non lus [ID Mutualiste]
+  Système Messagerie Interne --> System Principal: Retourner indicateur (nb messages)
+
+  System Principal -> Système de Notification: Demander résumé notifications récentes [ID Mutualiste]
+  Système de Notification --> System Principal: Retourner résumé / indicateur
+
+  System Principal --> UI: Envoyer toutes les informations de résumé agrégées
+  UI --> Mutualiste: Afficher le Tableau de Bord personnalisé avec widgets et liens rapides
+
+  Alt [Aucune donnée pour un module (Alt A1)]
+    Module XXX --> System Principal: Retourner liste vide ou indicateur "aucune donnée"
+    System Principal --> UI: Envoyer info "widget vide"
+    UI --> Mutualiste: Afficher widget vide ou message "Aucune donnée..."
+
+  Alt [Erreur Système lors récupération données (Exc E1)]
+    Module XXX --> System Principal: Signaler erreur
+    System Principal -> System Principal: Enregistrer log erreur technique
+    System Principal --> UI: Indiquer Échec partiel ou total du chargement
+    UI --> Mutualiste: Afficher Tableau de Bord partiel ou message d'erreur

@@ -1,0 +1,54 @@
+title UC 62 - Importer des données
+
+Acteurs: Administrateur
+Lifelines:
+  Administrateur
+  Interface Administration (UI Admin)
+  Système d'Import (Backend/Système)
+  Base de Données (DB)
+  Service d'Audit (Audit Service)
+
+Flux:
+  Administrateur -> UI Admin: Se connecter à interface administration
+  Administrateur -> UI Admin: Naviguer vers section importation de données
+  UI Admin --> Administrateur: Afficher interface d'importation
+
+  Administrateur -> UI Admin: Sélectionner type de données à importer
+  UI Admin --> Administrateur: Afficher instructions / modèle de fichier (Optionnel)
+
+  Administrateur -> UI Admin: Sélectionner et uploader le fichier de données
+  UI Admin -> Système d'Import: Envoyer fichier uploadé [Type Données, Fichier]
+
+  Système d'Import -> Système d'Import: Analyser format et structure du fichier (Alt A2)
+
+  Alt [Fichier valide]
+    Système d'Import --> UI Admin: Confirmer format valide / Envoyer aperçu (Optionnel)
+    UI Admin --> Administrateur: Afficher aperçu / Options de mappage (Optionnel)
+
+    Opt [Mappage/Pré-validation]
+      Administrateur -> UI Admin: Vérifier mappage / Lancer importation
+      UI Admin -> Système d'Import: Envoyer confirmation lancement importation
+
+    Système d'Import -> Système d'Import: Démarrer processus de traitement du fichier
+    Système d'Import -> Base de Données (DB): Traiter données ligne par ligne (Validation, Création/Mise à jour)
+    DB --> Système d'Import: Statut traitement par ligne / Résultats DB
+
+    Système d'Import -> Système d'Import: Compiler rapport de résultat (Succès/Échecs par ligne)
+    Système d'Import -> Service d'Audit: Enregistrer action importation (Qui, Quand, Fichier, Type, Résultat résumé)
+    Service d'Audit --> Système d'Import: Confirmation audit
+
+    Système d'Import --> UI Admin: Envoyer rapport de résultat détaillé
+    UI Admin --> Administrateur: Afficher le rapport de résultat (Tableau des erreurs, Résumé)
+
+  Alt [Fichier invalide (Alt A2)]
+    Système d'Import --> UI Admin: Signaler fichier invalide avec raison
+    UI Admin --> Administrateur: Afficher message d'erreur
+
+  Alt [Erreur Système critique pendant traitement (Exc E1)]
+    Système d'Import -> Système d'Import: Enregistrer log d'erreur technique
+    Système d'Import --> UI Admin: Indiquer Échec Technique Général
+    UI Admin --> Administrateur: Afficher message générique
+
+  Alt [Annulation par l'Administrateur (Alt A1)]
+    Administrateur --> UI Admin: Cliquer "Annuler"
+    UI Admin --> Administrateur: Abandonner opération

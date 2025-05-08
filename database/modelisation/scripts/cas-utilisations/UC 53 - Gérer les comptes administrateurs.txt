@@ -1,0 +1,126 @@
+title UC 53 - Gérer les comptes administrateurs
+
+Acteurs: Super Administrateur
+Lifelines:
+  Super Administrateur
+  Interface Administration (UI Admin)
+  Système Gestion Utilisateurs (Backend/Système)
+  Base de Données (DB)
+  Service d'Audit (Audit Service)
+  Service de Notification (Email/Interne - Optionnel)
+
+Flux:
+  Super Administrateur -> UI Admin: Se connecter à l'interface d'administration (UC 1 implicite)
+  Super Administrateur -> UI Admin: Naviguer vers section gestion utilisateurs / comptes administrateurs
+  UI Admin -> Système Gestion Utilisateurs: Demander liste comptes administrateurs
+  Système Gestion Utilisateurs -> DB: Récupérer liste comptes administrateurs (Infos clés, Statut, Rôles)
+  DB --> Système Gestion Utilisateurs: Retourner liste
+  Système Gestion Utilisateurs --> UI Admin: Envoyer liste comptes admin
+  UI Admin --> Super Administrateur: Afficher liste avec options (Créer, Gérer/Modifier, Activer/Désactiver, etc.)
+
+  Alt [Sous-Scénario A : Créer un nouveau compte administrateur]
+    Super Administrateur -> UI Admin: Cliquer "Créer un compte administrateur"
+    UI Admin --> Super Administrateur: Afficher formulaire de création compte
+
+    Super Administrateur -> UI Admin: Saisir informations (Nom, Email, Identifiant, etc.), attribuer rôles/permissions, définir statut initial
+    Super Administrateur -> UI Admin: Cliquer "Enregistrer" / "Créer le compte"
+
+    UI Admin -> Système Gestion Utilisateurs: Envoyer données nouveau compte [Données Compte, Rôles]
+    Système Gestion Utilisateurs -> Système Gestion Utilisateurs: Valider données (Alt A2) et identifiant unique
+    Alt [Validation réussie]
+      Système Gestion Utilisateurs -> DB: Créer enregistrement compte administrateur (avec mot de passe initial/temporaire haché)
+      DB --> Système Gestion Utilisateurs: Confirmation création compte
+      Système Gestion Utilisateurs -> Service d'Audit: Enregistrer action création compte (Qui, Quand, Compte Créé)
+      Service d'Audit --> Système Gestion Utilisateurs: Confirmation audit
+      Système Gestion Utilisateurs --> UI Admin: Indiquer Succès Création Compte
+      UI Admin --> Super Administrateur: Afficher message succès et mettre à jour liste
+
+      Opt [Notification au nouvel administrateur (Exc E3)]
+        Système Gestion Utilisateurs -> Service de Notification: Envoyer notification (Infos connexion initiale) [Email Nouvel Admin]
+
+    Alt [Validation KO (Alt A2)]
+      Système Gestion Utilisateurs --> UI Admin: Indiquer Échec Validation avec erreurs/motifs
+      UI Admin --> Super Administrateur: Afficher messages d'erreur sur formulaire
+
+    Alt [Erreur Système lors création (Exc E2)]
+      Système Gestion Utilisateurs -> Système Gestion Utilisateurs: Enregistrer log d'erreur technique
+      Système Gestion Utilisateurs --> UI Admin: Indiquer Échec Technique
+      UI Admin --> Super Administrateur: Afficher message générique
+
+  Alt [Sous-Scénario M : Visualiser / Modifier / Gérer un compte administrateur existant]
+    Super Administrateur -> UI Admin: Sélectionner un compte dans la liste [ID Compte Admin]
+    UI Admin -> Système Gestion Utilisateurs: Demander informations détaillées compte [ID Compte Admin]
+    Système Gestion Utilisateurs -> DB: Récupérer données compte (perso, rôles, statut) [ID Compte Admin]
+
+    Alt [Compte trouvé (Exc E1 si introuvable)]
+      DB --> Système Gestion Utilisateurs: Retourner données compte
+      Système Gestion Utilisateurs --> UI Admin: Envoyer données complètes compte
+      UI Admin --> Super Administrateur: Afficher vue détaillée / formulaire pré-rempli (modifiable) avec options de gestion
+
+      Super Administrateur -> UI Admin: Visualiser, Modifier infos/rôles/statut, ou Cliquer action spécifique (Réinitialiser MDP, Déverrouiller)
+      Super Administrateur -> UI Admin: Cliquer "Enregistrer" / Confirmer action spécifique
+
+      UI Admin -> Système Gestion Utilisateurs: Envoyer données modifiées / Requête action spécifique [ID Compte Admin, Données MàJ ou Type Action]
+      Système Gestion Utilisateurs -> Système Gestion Utilisateurs: Valider données MàJ (Alt A2), Valider action permise (Alt A3)
+
+      Alt [Validation réussie]
+        Système Gestion Utilisateurs -> DB: Mettre à jour compte / Exécuter action (MàJ MDP, Statut, etc.) [ID Compte Admin]
+        DB --> Système Gestion Utilisateurs: Confirmation action DB
+        Système Gestion Utilisateurs -> Service d'Audit: Enregistrer action gestion compte (Qui, Quand, Compte Ciblé, Action)
+        Service d'Audit --> Système Gestion Utilisateurs: Confirmation audit
+        Système Gestion Utilisateurs --> UI Admin: Indiquer Succès Action
+        UI Admin --> Super Administrateur: Afficher message succès et mettre à jour liste si nécessaire
+
+        Opt [Notification à l'administrateur concerné (Exc E3)]
+          Système Gestion Utilisateurs -> Service de Notification: Envoyer notification (Changement statut, MDP réinitialisé...) [Email Admin Concerné]
+
+      Alt [Validation KO (Alt A2, A3)]
+        Système Gestion Utilisateurs --> UI Admin: Indiquer Échec Action avec raisons
+        UI Admin --> Super Administrateur: Afficher messages d'erreur
+
+      Alt [Erreur Système lors MàJ/Action (Exc E2)]
+        Système Gestion Utilisateurs -> Système Gestion Utilisateurs: Enregistrer log d'erreur technique
+        Système Gestion Utilisateurs --> UI Admin: Indiquer Échec Technique
+        UI Admin --> Super Administrateur: Afficher message générique
+
+    Alt [Compte introuvable lors sélection (Exc E1)]
+      DB --> Système Gestion Utilisateurs: Indiquer introuvable
+      Système Gestion Utilisateurs --> UI Admin: Indiquer erreur (compte introuvable)
+      UI Admin --> Super Administrateur: Afficher message d'erreur / Retour à liste
+
+  Alt [Sous-Scénario S : Activer / Désactiver rapidement depuis la liste]
+    Super Administrateur -> UI Admin: Cliquer "Activer" ou "Désactiver" dans la liste [ID Compte Admin]
+    UI Admin --> Super Administrateur: Afficher boîte confirmation
+
+    Super Administrateur -> UI Admin: Confirmer l'action
+    UI Admin -> Système Gestion Utilisateurs: Envoyer requête changement statut [ID Compte Admin, Nouveau Statut]
+
+    Système Gestion Utilisateurs -> Système Gestion Utilisateurs: Valider action permise (Alt A3)
+    Alt [Action permise]
+      Système Gestion Utilisateurs -> DB: Mettre à jour statut compte [ID Compte Admin, Nouveau Statut]
+      DB --> Système Gestion Utilisateurs: Confirmation statut
+      Système Gestion Utilisateurs -> Service d'Audit: Enregistrer action changement statut (Qui, Quand, Compte Ciblé, Statut)
+      Service d'Audit --> Système Gestion Utilisateurs: Confirmation audit
+      Système Gestion Utilisateurs --> UI Admin: Indiquer Succès Changement Statut
+      UI Admin --> Super Administrateur: Afficher message succès et mettre à jour liste
+
+      Opt [Notification à l'administrateur concerné (Exc E3)]
+        Système Gestion Utilisateurs -> Service de Notification: Envoyer notification (Compte désactivé...) [Email Admin Concerné]
+
+    Alt [Action bloquée (Alt A3)]
+      Système Gestion Utilisateurs --> UI Admin: Indiquer Échec Action avec raisons
+      UI Admin --> Super Administrateur: Afficher message d'erreur
+
+    Alt [Compte introuvable (Exc E1)]
+      DB --> Système Gestion Utilisateurs: Indiquer introuvable
+      Système Gestion Utilisateurs --> UI Admin: Indiquer erreur (compte introuvable)
+      UI Admin --> Super Administrateur: Afficher message d'erreur
+
+    Alt [Erreur Système lors changement statut (Exc E2)]
+      Système Gestion Utilisateurs -> Système Gestion Utilisateurs: Enregistrer log d'erreur technique
+      Système Gestion Utilisateurs --> UI Admin: Indiquer Échec Technique
+      UI Admin --> Super Administrateur: Afficher message générique
+
+  Alt [Annulation par le Super Administrateur (Alt A1)]
+    Super Administrateur --> UI Admin: Cliquer "Annuler"
+    UI Admin --> Super Administrateur: Rediriger / Fermer formulaire (pas d'action backend)

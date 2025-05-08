@@ -1,0 +1,64 @@
+itle UC 64 - Sauvegarder la base de données
+
+Acteurs: Administrateur
+Lifelines:
+  Administrateur
+  Interface Administration (UI Admin)
+  Système de Sauvegarde (Backend/Système)
+  Base de Données (DB)
+  Outil Sauvegarde DB (Système Externe/Tool)
+  Service d'Audit (Audit Service)
+  Journal Sauvegardes (Stockage/DB)
+
+Flux:
+  Administrateur -> UI Admin: Se connecter à interface administration
+  Administrateur -> UI Admin: Naviguer vers section Sauvegarde et Restauration
+
+  UI Admin -> Système de Sauvegarde: Demander état et historique sauvegardes
+  Système de Sauvegarde -> Journal Sauvegardes: Récupérer historique des sauvegardes
+  Journal Sauvegardes --> Système de Sauvegarde: Retourner historique
+  Système de Sauvegarde --> UI Admin: Envoyer historique
+  UI Admin --> Administrateur: Afficher interface gestion sauvegardes avec historique
+
+  Administrateur -> UI Admin: Cliquer "Lancer une sauvegarde maintenant"
+  UI Admin --> Administrateur: Afficher boîte de confirmation (Optionnel)
+
+  Opt [Confirmation demandée]
+    Administrateur -> UI Admin: Confirmer le lancement
+  UI Admin -> Système de Sauvegarde: Envoyer requête lancement sauvegarde manuelle
+
+  Système de Sauvegarde -> Système de Sauvegarde: Vérifier configuration/opérationnalité (Alt A2)
+  Alt [Configuration OK]
+    Système de Sauvegarde -> Outil Sauvegarde DB: Initier processus de sauvegarde de la base de données
+    Outil Sauvegarde DB --> Système de Sauvegarde: Retourner statut (En cours...)
+
+    UI Admin --> Administrateur: Afficher statut "Sauvegarde en cours..."
+
+    Outil Sauvegarde DB --> Système de Sauvegarde: Notifier fin de sauvegarde (Succès/Échec/Infos)
+
+    Système de Sauvegarde -> Journal Sauvegardes: Enregistrer les détails de cette opération de sauvegarde (Date, Statut, Taille, Emplacement, Résultat technique)
+    Journal Sauvegardes --> Système de Sauvegarde: Confirmation enregistrement journal
+
+    Système de Sauvegarde -> Service d'Audit: Enregistrer action déclenchement sauvegarde (Qui, Quand, Résultat)
+    Service d'Audit --> Système de Sauvegarde: Confirmation audit
+
+    Système de Sauvegarde --> UI Admin: Envoyer rapport final / Statut Terminé
+    UI Admin --> Administrateur: Afficher message de confirmation succès ou échec
+
+  Alt [Configuration KO (Alt A2)]
+    Sistema de Sauvegarde --> UI Admin: Indiquer Échec Lancement (Configuration Invalide)
+    UI Admin --> Administrateur: Afficher message d'erreur
+
+  Alt [Erreur Système pendant exécution (Exc E1, Exc E2)]
+    Outil Sauvegarde DB --> Système de Sauvegarde: Notifier échec / Erreur technique
+    Sistema de Sauvegarde -> Sistema de Sauvegarde: Enregistrer log d'erreur technique
+    Sistema de Sauvegarde -> Journal Sauvegardes: Enregistrer échec dans journal
+    Journal Sauvegardes --> Sistema de Sauvegarde: Confirmation enregistrement
+    Sistema de Sauvegarde -> Service d'Audit: Enregistrer action déclenchement (Échec)
+    Service d'Audit --> Sistema de Sauvegarde: Confirmation audit
+    Sistema de Sauvegarde --> UI Admin: Indiquer Échec Général
+    UI Admin --> Administrateur: Afficher message d'erreur
+
+  Alt [Annulation par l'Administrateur (Alt A1)]
+    Administrateur --> UI Admin: Cliquer "Annuler"
+    UI Admin --> Administrateur: Abandonner opération

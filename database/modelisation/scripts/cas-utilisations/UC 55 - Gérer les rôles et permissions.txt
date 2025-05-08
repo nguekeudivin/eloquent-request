@@ -1,0 +1,118 @@
+title UC 55 - Gérer les rôles et permissions
+
+Acteurs: Super Administrateur
+Lifelines:
+  Super Administrateur
+  Interface Administration (UI Admin)
+  Système Gestion Utilisateurs (Backend/Système)
+  Base de Données (DB)
+  Service d'Audit (Audit Service)
+
+Flux:
+  Super Administrateur -> UI Admin: Se connecter à l'interface d'administration (UC 1 implicite)
+  Super Administrateur -> UI Admin: Naviguer vers section gestion utilisateurs / Rôles et Permissions
+  UI Admin -> Système Gestion Utilisateurs: Demander liste rôles et permissions disponibles
+  Système Gestion Utilisateurs -> DB: Récupérer liste rôles configurés et liste permissions granulaires
+  DB --> Système Gestion Utilisateurs: Retourner données
+  Système Gestion Utilisateurs --> UI Admin: Envoyer liste rôles (avec résumé, nb utilisateurs assignés) et liste permissions granulaires
+  UI Admin --> Super Administrateur: Afficher liste rôles avec options (Créer, Gérer/Modifier, Supprimer) et liste permissions
+
+  Alt [Sous-Scénario A : Créer un nouveau rôle]
+    Super Administrateur -> UI Admin: Cliquer "Créer un nouveau rôle"
+    UI Admin --> Super Administrateur: Afficher formulaire création rôle (Nom, Description, Sélection Permissions)
+
+    Super Administrateur -> UI Admin: Saisir Nom/Description, Sélectionner permissions
+    Super Administrateur -> UI Admin: Cliquer "Enregistrer le rôle"
+
+    UI Admin -> Système Gestion Utilisateurs: Envoyer données nouveau rôle [Nom, Description, Liste Permissions Sélectionnées]
+    Système Gestion Utilisateurs -> Système Gestion Utilisateurs: Valider données (Alt A2) et Nom unique
+    Alt [Validation réussie]
+      Système Gestion Utilisateurs -> DB: Créer enregistrement rôle et associer permissions
+      DB --> Système Gestion Utilisateurs: Confirmation création rôle/permissions
+      Système Gestion Utilisateurs -> Service d'Audit: Enregistrer action création rôle (Qui, Quand, Nom Rôle, Permissions Associées)
+      Service d'Audit --> Système Gestion Utilisateurs: Confirmation audit
+      Système Gestion Utilisateurs --> UI Admin: Indiquer Succès Création Rôle
+      UI Admin --> Super Administrateur: Afficher message succès et mettre à jour liste rôles
+
+    Alt [Validation KO (Alt A2)]
+      Système Gestion Utilisateurs --> UI Admin: Indiquer Échec Validation avec erreurs/motifs
+      UI Admin --> Super Administrateur: Afficher messages d'erreur sur formulaire
+
+    Alt [Erreur Système lors création (Exc E2)]
+      Système Gestion Utilisateurs -> Système Gestion Utilisateurs: Enregistrer log d'erreur technique
+      Système Gestion Utilisateurs --> UI Admin: Indiquer Échec Technique
+      UI Admin --> Super Administrateur: Afficher message générique
+
+  Alt [Sous-Scénario M : Visualiser / Modifier un rôle existant]
+    Super Administrateur -> UI Admin: Sélectionner un rôle dans la liste [ID Rôle]
+    UI Admin -> Système Gestion Utilisateurs: Demander informations détaillées rôle [ID Rôle]
+    Système Gestion Utilisateurs -> DB: Récupérer données rôle (Nom, Description, Permissions associées) [ID Rôle]
+
+    Alt [Rôle trouvé (Exc E1 si introuvable)]
+      DB --> Système Gestion Utilisateurs: Retourner données rôle
+      Système Gestion Utilisateurs --> UI Admin: Envoyer données rôle (y compris permissions actuelles) et liste permissions granulaires
+      UI Admin --> Super Administrateur: Afficher formulaire rôle pré-rempli (modifiable) avec liste permissions cochables
+
+      Super Administrateur -> UI Admin: Visualiser, Modifier Nom/Description, Ajouter/Retirer permissions
+      Super Administrateur -> UI Admin: Cliquer "Enregistrer les modifications"
+
+      UI Admin -> Système Gestion Utilisateurs: Envoyer données modifiées [ID Rôle, Nom, Description, Liste Permissions Modifiée]
+      Système Gestion Utilisateurs -> Système Gestion Utilisateurs: Valider données (Alt A2) et modifications permises (Alt A4)
+
+      Alt [Validation réussie]
+        Système Gestion Utilisateurs -> DB: Mettre à jour enregistrement rôle et associations permissions [ID Rôle]
+        DB --> Système Gestion Utilisateurs: Confirmation mise à jour rôle/permissions
+        Système Gestion Utilisateurs -> Service d'Audit: Enregistrer action modification rôle (Qui, Quand, Nom Rôle, Changements Permissions)
+        Service d'Audit --> Système Gestion Utilisateurs: Confirmation audit
+        Système Gestion Utilisateurs --> UI Admin: Indiquer Succès Modification Rôle
+        UI Admin --> Super Administrateur: Afficher message succès et mettre à jour liste rôles
+
+      Alt [Validation KO (Alt A2, A4)]
+        Système Gestion Utilisateurs --> UI Admin: Indiquer Échec Modification avec raisons
+        UI Admin --> Super Administrateur: Afficher messages d'erreur sur formulaire
+
+      Alt [Erreur Système lors modification (Exc E2)]
+        Système Gestion Utilisateurs -> Système Gestion Utilisateurs: Enregistrer log d'erreur technique
+        Système Gestion Utilisateurs --> UI Admin: Indiquer Échec Technique
+        UI Admin --> Super Administrateur: Afficher message générique
+
+    Alt [Rôle introuvable lors sélection (Exc E1)]
+      DB --> Système Gestion Utilisateurs: Indiquer introuvable
+      Système Gestion Utilisateurs --> UI Admin: Indiquer erreur (rôle introuvable)
+      UI Admin --> Super Administrateur: Afficher message d'erreur / Retour à liste
+
+  Alt [Sous-Scénario D : Supprimer un rôle]
+    Super Administrateur -> UI Admin: Sélectionner un rôle dans la liste et Cliquer "Supprimer" [ID Rôle]
+    UI Admin -> Système Gestion Utilisateurs: Vérifier si suppression permise (Pas assigné à utilisateurs, Pas rôle système) (Alt A3, A4) [ID Rôle]
+
+    Alt [Suppression permise]
+      Système Gestion Utilisateurs --> UI Admin: Demander confirmation suppression
+      UI Admin --> Super Administrateur: Afficher boîte confirmation
+
+      Super Administrateur -> UI Admin: Confirmer suppression
+      UI Admin -> Système Gestion Utilisateurs: Envoyer requête suppression [ID Rôle]
+
+      Système Gestion Utilisateurs -> DB: Supprimer enregistrement rôle et associations permissions [ID Rôle]
+      DB --> Système Gestion Utilisateurs: Confirmation suppression
+      Système Gestion Utilisateurs -> Service d'Audit: Enregistrer action suppression rôle (Qui, Quand, Nom Rôle Supprimé)
+      Service d'Audit --> Système Gestion Utilisateurs: Confirmation audit
+      Système Gestion Utilisateurs --> UI Admin: Indiquer Succès Suppression Rôle
+      UI Admin --> Super Administrateur: Afficher message succès et mettre à jour liste rôles
+
+    Alt [Suppression bloquée (Alt A3, A4)]
+      Système Gestion Utilisateurs --> UI Admin: Indiquer Échec Suppression avec raisons
+      UI Admin --> Super Administrateur: Afficher message d'erreur
+
+    Alt [Rôle introuvable (Exc E1)]
+      DB --> Système Gestion Utilisateurs: Indiquer introuvable
+      Système Gestion Utilisateurs --> UI Admin: Indiquer erreur (rôle introuvable)
+      UI Admin --> Super Administrateur: Afficher message d'erreur
+
+    Alt [Erreur Système lors suppression (Exc E2)]
+      Système Gestion Utilisateurs -> Système Gestion Utilisateurs: Enregistrer log d'erreur technique
+      Système Gestion Utilisateurs --> UI Admin: Indiquer Échec Technique
+      UI Admin --> Super Administrateur: Afficher message générique
+
+  Alt [Annulation par le Super Administrateur (Alt A1)]
+    Super Administrateur --> UI Admin: Cliquer "Annuler"
+    UI Admin --> Super Administrateur: Rediriger / Fermer formulaire (pas d'action backend)

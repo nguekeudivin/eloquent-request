@@ -1,0 +1,30 @@
+title UC 31 - Visualiser l historique de ses prises en charge
+
+Acteurs: Mutualiste
+Lifelines:
+  Mutualiste
+  Interface Utilisateur (UI)
+  Système de Gestion Prises en Charge (Backend/Système)
+  Base de Données (DB)
+
+Flux:
+  Mutualiste -> UI: Se connecter à son espace personnel (UC 1)
+  Mutualiste -> UI: Naviguer vers section "Mes Prises en Charge" / "Historique Prestations"
+
+  UI -> Système de Gestion Prises en Charge: Demander historique des prises en charge pour le mutualiste (et ses ayants droit) [ID Mutualiste]
+
+  Système de Gestion Prises en Charge -> DB: Interroger base pour prises en charge associées au mutualiste (et ses ayants droit) [ID Mutualiste]
+  DB --> Système de Gestion Prises en Charge: Retourner liste des prises en charge (ou liste vide)
+
+  Opt [Aucune prise en charge trouvée (Alt A1)]
+    Système de Gestion Prises en Charge --> UI: Indiquer liste vide
+    UI --> Mutualiste: Afficher message "Aucun historique de prises en charge disponible" ou liste vide
+
+  Else [Liste de prises en charge non vide]
+    Système de Gestion Prises en Charge --> UI: Envoyer liste des prises en charge (avec infos clés: Date, Catégorie, Montants, Bénéficiaire, Statut, etc.)
+    UI --> Mutualiste: Afficher l'historique des prises en charge sous forme de tableau/liste
+
+  Alt [Erreur Système lors récupération (Exc E1)]
+    Système de Gestion Prises en Charge -> Système de Gestion Prises en Charge: Enregistrer log d'erreur technique
+    Système de Gestion Prises en Charge --> UI: Indiquer Échec Technique
+    UI --> Mutualiste: Afficher message d'erreur générique ("Impossible de charger l'historique")

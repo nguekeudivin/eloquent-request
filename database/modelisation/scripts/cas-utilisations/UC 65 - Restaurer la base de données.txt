@@ -1,0 +1,68 @@
+title UC 65 - Restaurer la base de données
+
+Acteurs: Administrateur
+Lifelines:
+  Administrateur
+  Interface Administration (UI Admin) / Interface Maintenance (UI Maintenance)
+  Système de Sauvegarde (Backend/Système)
+  Base de Données (DB)
+  Outil Restauration DB (Système Externe/Tool)
+  Service d'Audit (Audit Service)
+  Journal Restaurations (Stockage/DB)
+  Services Application (Système)
+
+Flux:
+  Administrateur -> UI Admin / UI Maintenance: Se connecter au système / interface maintenance
+  Administrateur -> UI Admin / UI Maintenance: Naviguer vers section Sauvegarde et Restauration
+
+  UI Admin / UI Maintenance -> Système de Sauvegarde: Demander liste des fichiers de sauvegarde disponibles
+  Système de Sauvegarde -> Journal Sauvegardes: Récupérer liste fichiers sauvegarde
+  Journal Sauvegardes --> Système de Sauvegarde: Retourner liste (Date, Taille, Type)
+  Système de Sauvegarde --> UI Admin / UI Maintenance: Envoyer liste fichiers
+  UI Admin / UI Maintenance --> Administrateur: Afficher liste des fichiers de sauvegarde disponibles
+
+  Administrateur -> UI Admin / UI Maintenance: Sélectionner un fichier de sauvegarde [Chemin Fichier Sauvegarde]
+  Administrateur -> UI Admin / UI Maintenance: Cliquer "Restaurer"
+
+  UI Admin / UI Maintenance --> Administrateur: Afficher AVERTISSEMENT CRITIQUE (Perte de données) et demande de confirmation explicite
+  Administrateur -> UI Admin / UI Maintenance: Confirmer l'opération (ex: saisir un mot, cocher case)
+
+  UI Admin / UI Maintenance -> Système de Sauvegarde: Envoyer requête lancement restauration [Chemin Fichier Sauvegarde]
+
+  Sistema de Sauvegarde -> Sistema de Sauvegarde: Initier étapes préparatoires (Notifier utilisateurs, Arrêter Services Application)
+  Sistema de Sauvegarde -> Services Application: Arrêter les services
+  Services Application --> Sistema de Sauvegarde: Confirmation arrêt
+
+  Sistema de Sauvegarde -> Outil Restauration DB: Lancer processus de restauration de la base de données (utilisant le fichier sélectionné)
+  Outil Restauration DB --> Sistema de Sauvegarde: Retourner statut (En cours...)
+
+  UI Admin / UI Maintenance --> Administrateur: Afficher statut "Restauration en cours..."
+
+  Outil Restauration DB --> Sistema de Sauvegarde: Notifier fin de restauration (Succès/Échec/Infos) (Exc E1)
+
+  Sistema de Sauvegarde -> Journal Restaurations: Enregistrer les détails de cette opération de restauration (Date, Statut, Fichier Source, Résultat technique)
+  Journal Restaurations --> Sistema de Sauvegarde: Confirmation enregistrement journal
+
+  Sistema de Sauvegarde -> Service d'Audit: Enregistrer action déclenchement restauration (Qui, Quand, Fichier Source, Résultat)
+  Service d'Audit --> Sistema de Sauvegarde: Confirmation audit
+
+  Alt [Restauration technique réussie]
+    Sistema de Sauvegarde -> Sistema de Sauvegarde: Initier étapes post-restauration (Redémarrer Services Application)
+    Sistema de Sauvegarde -> Services Application: Démarrer les services
+    Services Application --> Sistema de Sauvegarde: Confirmation démarrage (Exc E3 si échec redémarrage)
+    Sistema de Sauvegarde --> UI Admin / UI Maintenance: Envoyer rapport final / Statut Terminé avec succès
+    UI Admin / UI Maintenance --> Administrateur: Afficher message de confirmation succès
+
+  Alt [Restauration technique échouée (Exc E1, Exc E2)]
+    Sistema de Sauvegarde -> Sistema de Sauvegarde: Enregistrer log d'erreur technique
+    Sistema de Sauvegarde --> UI Admin / UI Maintenance: Envoyer rapport final / Statut Terminé avec échec
+    UI Admin / UI Maintenance --> Administrateur: Afficher message d'échec (potentiellement technique)
+    ' Note: Un échec ici nécessite souvent une intervention manuelle d'urgence.
+
+  Alt [Fichier de sauvegarde introuvable/invalide (Alt A2)]
+    Sistema de Sauvegarde --> UI Admin / UI Maintenance: Indiquer Échec Lancement (Fichier Invalide)
+    UI Admin / UI Maintenance --> Administrateur: Afficher message d'erreur
+
+  Alt [Annulation par l'Administrateur (Alt A1 - avant confirmation critique)]
+    Administrateur --> UI Admin / UI Maintenance: Cliquer "Annuler" / Ne pas confirmer
+    UI Admin / UI Maintenance --> Administrateur: Abandonner opération

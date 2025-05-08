@@ -1,0 +1,51 @@
+title UC 70 - Enregistrer une sortie de caisse
+
+Acteurs: Administrateur
+Lifelines:
+  Administrateur
+  Interface Administration (UI Admin)
+  Système Financier (Backend/Système)
+  Base de Données (DB)
+  Service d'Audit (Audit Service)
+  Système de Gestion Documents (Optionnel - Justificatif)
+
+Flux:
+  Administrateur -> UI Admin: Se connecter à interface administration
+  Administrateur -> UI Admin: Naviguer vers section gestion de caisse
+  UI Admin --> Administrateur: Afficher interface gestion caisse (UC 71 implicite) avec option "Nouvelle sortie" et solde actuel
+
+  Administrateur -> UI Admin: Cliquer "Enregistrer une sortie de caisse"
+  UI Admin --> Administrateur: Afficher formulaire saisie sortie en caisse (Pré-rempli Type="Sortie", Date/Heure), affichant le solde actuel
+
+  Administrateur -> UI Admin: Saisir Montant, Motif/Destination, Description, (Optionnel) Lier à dépense/mutualiste, Joindre justificatif
+  Administrateur -> UI Admin: Cliquer "Enregistrer la sortie"
+
+  UI Admin -> Système Financier: Envoyer données sortie en caisse et justificatif (Optionnel) [Données Sortie, Fichier]
+
+  Système Financier -> Système Financier: Valider données (Alt A2), Solde suffisant (Alt A3), et justificatif (Alt A4)
+
+  Alt [Validation réussie (y compris solde suffisant)]
+    Système Financier -> DB: Créer nouvel enregistrement sortie en caisse [Données Sortie]
+    DB --> Système Financier: Confirmation création
+    Sistema Financier -> DB: Mettre à jour solde caisse (- Montant)
+    DB --> Sistema Financier: Confirmation solde
+    Opt [Justificatif joint]
+      Sistema Financier -> Système de Gestion Documents: Traiter et associer justificatif
+      Système de Gestion Documents --> Sistema Financier: Statut traitement (Alt A4 si échec)
+    Sistema Financier -> Service d'Audit: Enregistrer action enregistrement sortie caisse (Qui, Quand, Quoi)
+    Service d'Audit --> Sistema Financier: Confirmation audit
+    Sistema Financier --> UI Admin: Indiquer Succès Enregistrement Sortie
+    UI Admin --> Administrateur: Afficher message succès (avec nouveau solde)
+
+  Alt [Validation KO (Alt A2), Solde Insuffisant (Alt A3), ou Échec Justificatif (Alt A4)]
+    Sistema Financier --> UI Admin: Indiquer Échec Enregistrement avec erreurs/motifs
+    UI Admin --> Administrateur: Afficher messages d'erreur sur formulaire
+
+  Alt [Erreur Système lors enregistrement (Exc E1)]
+    Sistema Financier -> Sistema Financier: Enregistrer log d'erreur technique
+    Sistema Financier --> UI Admin: Indiquer Échec Technique
+    UI Admin --> Administrateur: Afficher message générique
+
+  Alt [Annulation par l'Administrateur (Alt A1)]
+    Administrateur --> UI Admin: Cliquer "Annuler" / Quitter
+    UI Admin --> Administrateur: Abandonner formulaire

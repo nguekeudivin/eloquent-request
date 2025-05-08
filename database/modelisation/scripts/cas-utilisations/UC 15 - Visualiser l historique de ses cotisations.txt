@@ -1,0 +1,30 @@
+title UC 15 - Visualiser l historique de ses cotisations
+
+Acteurs: Mutualiste
+Lifelines:
+  Mutualiste
+  Interface Utilisateur (UI)
+  Système de Gestion Cotisations (Backend/Système)
+  Base de Données (DB)
+
+Flux:
+  Mutualiste -> UI: Se connecter à son espace personnel (UC 1)
+  Mutualiste -> UI: Naviguer vers la section "Mes Cotisations" / "Historique Paiements"
+
+  UI -> Système de Gestion Cotisations: Demander historique des cotisations [ID Mutualiste]
+
+  Système de Gestion Cotisations -> DB: Interroger base pour cotisations et paiements associés [ID Mutualiste]
+  DB --> Système de Gestion Cotisations: Retourner liste des cotisations/paiements (ou liste vide)
+
+  Opt [Aucun historique trouvé (Alt A1)]
+    Système de Gestion Cotisations --> UI: Indiquer liste vide
+    UI --> Mutualiste: Afficher message "Aucun historique disponible" ou liste vide
+
+  Else [Historique non vide]
+    Système de Gestion Cotisations --> UI: Envoyer liste des cotisations (Période, Montant dû, Payé, Statut, Date Paiement, etc.)
+    UI --> Mutualiste: Afficher l'historique des cotisations sous forme de tableau/liste
+
+  Alt [Erreur Système lors récupération (Exc E1)]
+    Système de Gestion Cotisations -> Système de Gestion Cotisations: Enregistrer log d'erreur technique
+    Système de Gestion Cotisations --> UI: Indiquer Échec Technique
+    UI --> Mutualiste: Afficher message d'erreur générique ("Impossible de charger l'historique")

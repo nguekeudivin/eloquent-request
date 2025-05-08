@@ -1,0 +1,46 @@
+title UC 67 - Visualiser les dépenses de fonctionnement
+
+Acteurs: Administrateur
+Lifelines:
+  Administrateur
+  Interface Administration (UI Admin)
+  Système Financier (Backend/Système)
+  Base de Données (DB)
+
+Flux:
+  Administrateur -> UI Admin: Se connecter à interface administration
+  Administrateur -> UI Admin: Naviguer vers section visualisation dépenses / liste dépenses
+
+  UI Admin -> Système Financier: Demander liste dépenses de fonctionnement (potentiellement avec filtres/tri par défaut)
+
+  Système Financier -> DB: Interroger base pour dépenses de fonctionnement (selon critères)
+  Alt [Dépenses trouvées (Alt A1 si aucune)]
+    DB --> Système Financier: Retourner liste des dépenses
+    Système Financier --> UI Admin: Envoyer liste des dépenses (Résumé: Date, Montant, Bénéficiaire, Catégorie)
+    UI Admin --> Administrateur: Afficher tableau/liste des dépenses
+
+    Opt [Administrateur utilise filtres/tri]
+      Administrateur -> UI Admin: Appliquer filtres ou tri
+      UI Admin -> Système Financier: Envoyer requête dépenses avec nouveaux critères
+      Système Financier -> DB: Interroger DB avec nouveaux critères
+      DB --> Système Financier: Retourner liste filtrée/triée
+      Système Financier --> UI Admin: Envoyer liste actualisée
+      UI Admin --> Administrateur: Afficher liste actualisée
+
+    Opt [Administrateur consulte détails dépense]
+      Administrateur -> UI Admin: Sélectionner une dépense [ID Dépense]
+      UI Admin -> Système Financier: Demander détails complets dépense [ID Dépense]
+      Système Financier -> DB: Récupérer détails dépense (y compris justificatif si présent) [ID Dépense]
+      DB --> Système Financier: Retourner détails
+      Système Financier --> UI Admin: Envoyer détails dépense pour affichage
+      UI Admin --> Administrateur: Afficher vue détaillée dépense
+
+  Alt [Aucune dépense trouvée (Alt A1)]
+    DB --> Système Financier: Indiquer liste vide
+    Système Financier --> UI Admin: Indiquer liste vide
+    UI Admin --> Administrateur: Afficher message "Aucune dépense trouvée..." ou liste vide
+
+  Alt [Erreur Système lors récupération/affichage (Exc E1)]
+    Système Financier -> Système Financier: Enregistrer log erreur
+    Système Financier --> UI Admin: Indiquer Échec Technique
+    UI Admin --> Administrateur: Afficher message générique

@@ -1,0 +1,121 @@
+title UC 10 - Gérer ses ayants droit (Ajout/Modif/Suppression)
+
+Acteurs: Mutualiste
+Lifelines:
+  Mutualiste
+  Interface Utilisateur (UI)
+  Système de Gestion Ayants Droit (Backend/Système)
+  Base de Données (DB)
+  Service d'Audit (Audit Service)
+  Service de Validation Admin (Optionnel)
+
+Flux:
+  Mutualiste -> UI: Se connecter à son espace personnel (UC 1)
+  Mutualiste -> UI: Naviguer vers section "Mes Ayants Droit"
+
+  UI -> Système de Gestion Ayants Droit: Demander liste ayants droit [ID Mutualiste]
+  Système de Gestion Ayants Droit -> DB: Récupérer ayants droit du mutualiste [ID Mutualiste]
+  DB --> Système de Gestion Ayants Droit: Retourner liste des ayants droit (ou vide)
+  Système de Gestion Ayants Droit --> UI: Envoyer liste ayants droit
+  UI --> Mutualiste: Afficher page de gestion avec liste (UC 11 implicite) et options (Ajout/Modif/Suppr)
+
+  Alt [Mutualiste choisit d'Ajouter un ayant droit]
+    Mutualiste -> UI: Cliquer sur "Ajouter un ayant droit"
+    UI --> Mutualiste: Afficher formulaire de saisie nouvel ayant droit
+
+    Mutualiste -> UI: Saisir informations nouvel ayant droit
+    Mutualiste -> UI: Cliquer sur "Enregistrer" / "Ajouter"
+
+    UI -> Système de Gestion Ayants Droit: Envoyer données nouvel ayant droit
+
+    Système de Gestion Ayants Droit -> Système de Gestion Ayants Droit: Valider données saisies (Format, Obligatoire)
+    Système de Gestion Ayants Droit -> DB: Vérifier règles métier (Limite ayants droit, etc.) [ID Mutualiste]
+    DB --> Système de Gestion Ayants Droit: Résultat vérification
+
+    Alt [Validation et règles métier OK]
+      Système de Gestion Ayants Droit -> DB: Créer nouvel enregistrement ayant droit [Données, ID Mutualiste]
+      DB --> Système de Gestion Ayants Droit: Confirmation création
+      Système de Gestion Ayants Droit -> Service d'Audit: Enregistrer action ajout ayant droit (Qui, Quand, Détails)
+      Service d'Audit --> Système de Gestion Ayants Droit: Confirmation audit
+      Opt [Validation Admin requise]
+        Système de Gestion Ayants Droit -> Service de Validation Admin: Marquer ayant droit "En attente validation"
+        Service de Validation Admin --> Système de Gestion Ayants Droit: Confirmation statut
+      Système de Gestion Ayants Droit --> UI: Indiquer Succès Ajout
+      UI --> Mutualiste: Afficher message succès et mettre à jour liste
+
+    Alt [Validation ou règles métier KO (Alt A2, A4)]
+      Système de Gestion Ayants Droit --> UI: Indiquer Échec Ajout avec erreurs/motif
+      UI --> Mutualiste: Afficher messages d'erreur sur formulaire / message limite atteinte
+      UI --> Mutualiste: Rester sur formulaire (ou retour liste pour A4)
+
+    Alt [Erreur Système lors création (Exc E1)]
+      Système de Gestion Ayants Droit -> Système de Gestion Ayants Droit: Enregistrer log d'erreur technique
+      Système de Gestion Ayants Droit --> UI: Indiquer Échec Technique
+      UI --> Mutualiste: Afficher message d'erreur générique
+
+  Alt [Mutualiste choisit de Modifier un ayant droit]
+    Mutualiste -> UI: Cliquer sur "Modifier" [ID Ayant Droit]
+    UI -> Système de Gestion Ayants Droit: Demander informations ayant droit [ID Ayant Droit]
+    Système de Gestion Ayants Droit -> DB: Récupérer informations ayant droit [ID Ayant Droit]
+    DB --> Système de Gestion Ayants Droit: Retourner informations
+    Système de Gestion Ayants Droit --> UI: Envoyer informations
+    UI --> Mutualiste: Afficher formulaire pré-rempli pour modification
+
+    Mutualiste -> UI: Modifier informations
+    Mutualiste -> UI: Cliquer sur "Enregistrer modifications"
+
+    UI -> Système de Gestion Ayants Droit: Envoyer données modifiées [ID Ayant Droit, Données]
+
+    Système de Gestion Ayants Droit -> Système de Gestion Ayants Droit: Valider données modifiées
+
+    Alt [Validation OK]
+      Système de Gestion Ayants Droit -> DB: Mettre à jour enregistrement ayant droit [ID Ayant Droit, Données]
+      DB --> Système de Gestion Ayants Droit: Confirmation mise à jour
+      Système de Gestion Ayants Droit -> Service d'Audit: Enregistrer action modification ayant droit (Qui, Quand, Détails)
+      Service d'Audit --> Système de Gestion Ayants Droit: Confirmation audit
+      Opt [Validation Admin requise après modif sensible]
+        Système de Gestion Ayants Droit -> Service de Validation Admin: Marquer ayant droit "À re-valider"
+      Système de Gestion Ayants Droit --> UI: Indiquer Succès Modification
+      UI --> Mutualiste: Afficher message succès et mettre à jour liste
+
+    Alt [Validation KO (Alt A2)]
+      Système de Gestion Ayants Droit --> UI: Indiquer Échec Modification avec erreurs
+      UI --> Mutualiste: Afficher messages d'erreur sur formulaire
+      UI --> Mutualiste: Rester sur formulaire
+
+    Alt [Erreur Système lors modification (Exc E1)]
+      Système de Gestion Ayants Droit -> Système de Gestion Ayants Droit: Enregistrer log d'erreur technique
+      Système de Gestion Ayants Droit --> UI: Indiquer Échec Technique
+      UI --> Mutualiste: Afficher message d'erreur générique
+
+  Alt [Mutualiste choisit de Supprimer un ayant droit]
+    Mutualiste -> UI: Cliquer sur "Supprimer" [ID Ayant Droit]
+    UI --> Mutualiste: Afficher message de confirmation
+
+    Mutualiste -> UI: Confirmer suppression
+
+    UI -> Système de Gestion Ayants Droit: Envoyer requête suppression [ID Ayant Droit]
+
+    Système de Gestion Ayants Droit -> DB: Vérifier préconditions suppression (Pas de prestation active, règles métier) [ID Ayant Droit]
+    DB --> Système de Gestion Ayants Droit: Résultat vérification
+
+    Alt [Préconditions suppression OK]
+      Système de Gestion Ayants Droit -> DB: Marquer ayant droit comme supprimé/inactif (suppression logique) [ID Ayant Droit]
+      DB --> Système de Gestion Ayants Droit: Confirmation suppression logique
+      Système de Gestion Ayants Droit -> Service d'Audit: Enregistrer action suppression ayant droit (Qui, Quand)
+      Service d'Audit --> Système de Gestion Ayants Droit: Confirmation audit
+      Système de Gestion Ayants Droit --> UI: Indiquer Succès Suppression
+      UI --> Mutualiste: Afficher message succès et mettre à jour liste
+
+    Alt [Suppression bloquée (Alt A3)]
+      Système de Gestion Ayants Droit --> UI: Indiquer Échec Suppression (Bloquée)
+      UI --> Mutualiste: Afficher message d'erreur ("Suppression impossible car...")
+
+    Alt [Erreur Système lors suppression (Exc E1)]
+      Système de Gestion Ayants Droit -> Système de Gestion Ayants Droit: Enregistrer log d'erreur technique
+      Système de Gestion Ayants Droit --> UI: Indiquer Échec Technique
+      UI --> Mutualiste: Afficher message d'erreur générique
+
+  Alt [Mutualiste annule opération (Alt A1)]
+    Mutualiste --> UI: Cliquer "Annuler" / Quitter pendant Ajout/Modif/Suppr
+    UI --> Mutualiste: Rediriger vers liste (pas d'action backend)

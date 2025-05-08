@@ -1,0 +1,121 @@
+@startuml
+title Diagramme de Classes Conceptuel
+
+' Stylisation (Optionnel, pour la clarté visuelle)
+skinparam package {
+  BorderColor Black
+  FontColor Black
+}
+skinparam class {
+  BorderColor Black
+  BackgroundColor White
+  ArrowColor Black
+}
+skinparam linetype polyline ' Pour des lignes de relation plus claires
+
+' === Packages conceptuels correspondant aux grands domaines ===
+
+package "Gestion Utilisateurs & Accès" {
+  class Utilisateur
+  class Administrateur
+  class "Super Administrateur" as SuperAdministrateur
+  class Role
+  class Permission
+
+  Utilisateur <|-- Administrateur : Hérite de
+  Utilisateur <|-- Mutualiste : Hérite de
+  Administrateur <|-- SuperAdministrateur : Hérite de
+
+  Administrateur " * " -- " * " Role : possède >
+  Role " * " -- " * " Permission : définit >
+}
+
+package "Gestion Adhérents & Contrats" {
+  class Mutualiste
+  class AyantDroit
+  class Contrat
+  class Adhesion
+
+  Mutualiste "1" *-- "0..*" AyantDroit : a >
+  Mutualiste "1" -- "0..*" Adhesion : adhere via >
+  Adhesion " * " -- "1" Contrat : concerne >
+  Adhesion " * " -- "1" Mutualiste : lie a >
+}
+
+package "Gestion Financière & Trésorerie" {
+  class Cotisation
+  class Paiement
+  class Pret
+  class RachatPret
+  class AidePonctuelle
+  class DepenseFonctionnement
+  class CategorieDepense
+  class Caisse
+  class MouvementCaisse
+
+  Adhesion "1" -- "0..*" Cotisation : genere >
+  Mutualiste "1" -- "0..*" Paiement : recoit de >
+  Paiement " * " -- " * " Cotisation : couvre >
+
+  Mutualiste "1" -- "0..*" Pret : accorde a >
+  Mutualiste "1" -- "0..*" RachatPret : concerne >
+  Mutualiste "1" -- "0..*" AidePonctuelle : accorde a >
+
+  DepenseFonctionnement " * " -- "1" CategorieDepense : est de categorie >
+
+  Caisse "1" -- "0..*" MouvementCaisse : concerne >
+  MouvementCaisse " * " -- "0..1" DepenseFonctionnement : paye >
+}
+
+package "Gestion Services & Prestations" {
+  class Prestation
+  class PriseEnCharge
+  class Liquidation
+
+  Contrat "1" -- "0..*" Prestation : inclut >
+
+  PriseEnCharge " * " -- "1" Prestation : concerne >
+  PriseEnCharge " * " -- "0..1" Mutualiste : pour (principal) >
+  PriseEnCharge " * " -- "0..1" AyantDroit : pour (dependant) >
+  Adhesion "1" -- "0..*" PriseEnCharge : sous l'adhesion >
+
+  PriseEnCharge "1" -- "0..1" Liquidation : regle par >
+}
+
+package "Gestion Matériels" {
+  class Materiel
+  class PretMateriel
+
+  Materiel "1" -- "0..*" PretMateriel : est emprunte >
+  Mutualiste "1" -- "0..*" PretMateriel : emprunte >
+}
+
+package "Gestion Communication & Suivi" {
+  class Reclamation
+  class Conversation
+  class Message
+  class Notification
+
+  Mutualiste "1" -- "0..*" Reclamation : soumise par >
+  Conversation "1" -- "0..*" Message : contient >
+  Message " * " -- "1" Conversation : appartient a >
+  Message " * " -- "1" Utilisateur : envoye par >
+
+  Conversation " * " -- " * " Utilisateur : participe a >
+  Notification " * " -- "1" Utilisateur : destinee a >
+}
+
+package "Système & Maintenance" {
+    class LogActivite
+    class Rapport
+    class SauvegardeDB
+    class RestaurationDB
+
+    LogActivite " * " -- "0..1" Utilisateur : action de >
+}
+
+' === Liens inter-packages supplémentaires si nécessaire pour la clarté ===
+' Exemple : Un MouvementCaisse peut être lié à un Paiement (encaissement de cotisation en espèces)
+Paiement " * " -- "0..1" MouvementCaisse : gere par >
+
+@enduml

@@ -1,0 +1,47 @@
+title UC 54 - Consulter les logs d activité
+
+Acteurs: Super Administrateur
+Lifelines:
+  Super Administrateur
+  Interface Administration (UI Admin)
+  Système d'Audit (Backend/Système)
+  Base de Données d'Audit (DB)
+
+Flux:
+  Super Administrateur -> UI Admin: Se connecter à l'interface d'administration (UC 1 implicite)
+  Super Administrateur -> UI Admin: Naviguer vers section Audit / Logs d'activité
+
+  UI Admin -> Système d'Audit: Demander logs d'activité (potentiellement avec filtres/période par défaut)
+
+  Système d'Audit -> Base de Données d'Audit: Interroger DB pour logs (selon critères)
+
+  Alt [Logs trouvés (Alt A1 si aucun)]
+    Base de Données d'Audit --> Système d'Audit: Retourner liste des logs
+    Système d'Audit --> UI Admin: Envoyer liste des logs (Infos clés: Date, Utilisateur, Action, Objet, Résultat, etc.)
+    UI Admin --> Super Administrateur: Afficher le tableau/la liste des logs d'activité (potentiellement paginée)
+
+    Opt [Super Administrateur utilise filtres/recherche]
+      Super Administrateur -> UI Admin: Appliquer filtres ou recherche
+      UI Admin -> Système d'Audit: Envoyer requête logs avec nouveaux critères
+      Système d'Audit -> Base de Données d'Audit: Interroger DB avec nouveaux critères
+      Base de Données d'Audit --> Système d'Audit: Retourner liste filtrée/recherchée
+      Système d'Audit --> UI Admin: Envoyer liste filtrée/recherchée
+      UI Admin --> Super Administrateur: Afficher liste actualisée
+
+    Opt [Super Administrateur consulte détails d'une log]
+      Super Administrateur -> UI Admin: Sélectionner une entrée de log [ID Log]
+      UI Admin -> Système d'Audit: Demander détails complets log [ID Log]
+      Système d'Audit -> Base de Données d'Audit: Récupérer détails log [ID Log]
+      Base de Données d'Audit --> Système d'Audit: Retourner détails log
+      Système d'Audit --> UI Admin: Envoyer détails log
+      UI Admin --> Super Administrateur: Afficher vue détaillée de la log
+
+  Alt [Aucune log trouvée (Alt A1)]
+    Base de Données d'Audit --> Système d'Audit: Indiquer liste vide
+    Système d'Audit --> UI Admin: Indiquer liste vide
+    UI Admin --> Super Administrateur: Afficher message "Aucune log trouvée" ou liste vide
+
+  Alt [Erreur Système lors récupération/affichage (Exc E1)]
+    Système d'Audit -> Système d'Audit: Enregistrer log d'erreur technique
+    Système d'Audit --> UI Admin: Indiquer Échec Technique
+    UI Admin --> Super Administrateur: Afficher message d'erreur générique

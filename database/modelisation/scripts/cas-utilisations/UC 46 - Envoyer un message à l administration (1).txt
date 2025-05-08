@@ -1,0 +1,57 @@
+title UC 46 - Envoyer un message à l administration
+
+Acteurs: Mutualiste
+Lifelines:
+  Mutualiste
+  Interface Utilisateur (UI)
+  Système Messagerie Interne (Backend/Système)
+  Base de Données (DB)
+  Système de Gestion Documents (Optionnel - pour pièces jointes)
+  Service d'Audit (Audit Service)
+  Service de Notification Admin (Interne)
+
+Flux:
+  Mutualiste -> UI: Se connecter à son espace personnel (UC 1)
+  Mutualiste -> UI: Naviguer vers section "Messagerie"
+  UI --> Mutualiste: Afficher interface messagerie (UC 50 implicite) avec option "Nouveau Message"
+
+  Mutualiste -> UI: Cliquer "Nouveau Message"
+  UI --> Mutualiste: Afficher formulaire de composition message
+
+  Mutualiste -> UI: Saisir Objet, Corps du message, (Optionnel) Sélectionner destinataire/service, (Optionnel) Joindre documents
+  Mutualiste -> UI: Cliquer "Envoyer"
+
+  UI -> Système Messagerie Interne: Envoyer message et pièces jointes [ID Mutualiste, Sujet, Corps, Destinataire(s) optionnel, Fichiers]
+
+  Système Messagerie Interne -> Système Messagerie Interne: Valider message (Objet/Corps non vides) (Alt A2) et pièces jointes (Alt A3)
+
+  Alt [Validation réussie]
+    Système Messagerie Interne -> DB: Créer nouvel enregistrement message [Données Message, ID Mutualiste Expéditeur]
+    DB --> Système Messagerie Interne: Confirmation création message
+    Système Messagerie Interne -> Système Messagerie Interne: Acheminer message vers boîte(s) de réception Admin(s) appropriée(s) (selon destinataire sélectionné ou règles)
+
+    Opt [Documents joints]
+      Système Messagerie Interne -> Système de Gestion Documents: Traiter et associer documents au message
+      Système de Gestion Documents --> Système Messagerie Interne: Statut traitement documents (Alt A3 si échec)
+
+    Système Messagerie Interne -> Service d'Audit: Enregistrer action envoi message (Qui, Quand, Sujet, Destinataire(s))
+    Service d'Audit --> Système Messagerie Interne: Confirmation audit
+
+    Système Messagerie Interne --> UI: Indiquer Succès Envoi Message
+    UI --> Mutualiste: Afficher message confirmation succès
+
+    Système Messagerie Interne -> Service de Notification Admin: Notifier Administrateur(s) concerné(s) de nouveau message (UC 48 implicite)
+    Service de Notification Admin --> Système Messagerie Interne: Statut notification (Exc E2)
+
+  Alt [Validation KO (Alt A2) ou Échec Pièce Jointe (Alt A3 qui bloque l'envoi)]
+    Système Messagerie Interne --> UI: Indiquer Échec Envoi avec erreurs/motifs
+    UI --> Mutualiste: Afficher messages d'erreur sur formulaire
+
+  Alt [Erreur Système lors enregistrement/acheminement (Exc E1)]
+    Système Messagerie Interne -> Système Messagerie Interne: Enregistrer log d'erreur technique
+    Système Messagerie Interne --> UI: Indiquer Échec Technique
+    UI --> Mutualiste: Afficher message générique
+
+  Alt [Annulation par le Mutualiste (Alt A1)]
+    Mutualiste --> UI: Cliquer "Annuler" / Quitter
+    UI --> Mutualiste: Abandonner formulaire

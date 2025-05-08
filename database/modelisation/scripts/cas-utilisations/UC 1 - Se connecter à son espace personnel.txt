@@ -1,0 +1,48 @@
+title UC 1 - Se connecter à son espace personnel
+
+Acteurs: Mutualiste
+Lifelines:
+  Mutualiste
+  Interface Utilisateur (UI)
+  Système d'Authentification (Backend/Système)
+  Base de Données (DB)
+
+Flux:
+  Mutualiste -> UI: Accéder à la page de connexion
+  UI --> Mutualiste: Afficher le formulaire de connexion
+
+  Mutualiste -> UI: Saisir Identifiant et Mot de passe
+  Mutualiste -> UI: Cliquer sur "Se connecter"
+
+  UI -> Système d'Authentification: Envoyer identifiants (login, motDePasse)
+
+  Système d'Authentification -> DB: Vérifier identifiants et statut du compte
+  DB --> Système d'Authentification: Retourner résultat (trouvé/non trouvé, actif/inactif/suspendu)
+
+  Alt [Identifiants Valides et Compte Actif]
+    Système d'Authentification -> Système d'Authentification: Établir session sécurisée
+    Système d'Authentification -> DB: Enregistrer date/heure connexion réussie
+    DB --> Système d'Authentification: Confirmation enregistrement
+    Système d'Authentification --> UI: Indiquer Succès Connexion
+    UI --> Mutualiste: Rediriger vers Tableau de Bord Personnel (UC 52)
+
+  Alt [Identifiants Invalides (Scénario Alternatif A1)]
+    Système d'Authentification --> UI: Indiquer Échec Connexion (Identifiants invalides)
+    UI --> Mutualiste: Afficher message d'erreur "Identifiant ou mot de passe incorrect."
+    UI --> Mutualiste: Rester sur page de connexion
+
+  Alt [Compte Inactif (Scénario Alternatif A2)]
+    Système d'Authentification --> UI: Indiquer Échec Connexion (Compte inactif)
+    UI --> Mutualiste: Afficher message "Compte non validé..."
+    UI --> Mutualiste: Rester sur page de connexion
+
+  Alt [Compte Suspendu (Scénario Alternatif A3)]
+    Système d'Authentification --> UI: Indiquer Échec Connexion (Compte suspendu)
+    UI --> Mutualiste: Afficher message "Compte suspendu..."
+    UI --> Mutualiste: Rester sur page de connexion
+
+  Alt [Erreur Système (Scénario d'Exception E1)]
+    Système d'Authentification -> Système d'Authentification: Enregistrer log d'erreur technique
+    Système d'Authentification --> UI: Indiquer Échec Technique
+    UI --> Mutualiste: Afficher message d'erreur générique
+    UI --> Mutualiste: Rester sur page de connexion

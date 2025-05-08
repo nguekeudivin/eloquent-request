@@ -1,0 +1,62 @@
+title UC 60 - Visualiser les rapports
+
+Acteurs: Administrateur
+Lifelines:
+  Administrateur
+  Interface Administration (UI Admin)
+  Système de Rapports (Backend/Système)
+  Base de Données (DB)
+
+Flux:
+  Administrateur -> UI Admin: Se connecter à interface administration
+  Administrateur -> UI Admin: Naviguer vers section "Rapports"
+
+  UI Admin -> Système de Rapports: Demander liste des rapports disponibles (selon droits)
+  Système de Rapports -> DB: Récupérer configuration rapports et droits d'accès
+  DB --> Système de Rapports: Retourner données
+  Système de Rapports --> UI Admin: Envoyer liste rapports (Titre, Description, Catégorie)
+  UI Admin --> Administrateur: Afficher liste des rapports accessibles
+
+  Administrateur -> UI Admin: Sélectionner un rapport [ID Rapport]
+
+  Opt [Rapport paramétrable]
+    UI Admin -> Système de Rapports: Demander paramètres requis pour rapport [ID Rapport]
+    Système de Rapports -> DB: Récupérer configuration paramètres rapport [ID Rapport]
+    DB --> Système de Rapports: Retourner paramètres
+    Système de Rapports --> UI Admin: Envoyer structure paramètres
+    UI Admin --> Administrateur: Afficher formulaire de paramètres
+
+    Administrateur -> UI Admin: Saisir paramètres (Période, Filtres, etc.)
+    Administrateur -> UI Admin: Cliquer "Générer Rapport" / "Appliquer"
+
+  UI Admin -> Système de Rapports: Envoyer requête génération/affichage rapport [ID Rapport, Paramètres (si applicable)]
+
+  Système de Rapports -> DB: Récupérer données brutes pour le rapport (selon ID Rapport et Paramètres)
+  DB --> Système de Rapports: Retourner données
+  Système de Rapports -> Système de Rapports: Effectuer calculs / agrégations / formatage du rapport
+  Système de Rapports --> UI Admin: Envoyer contenu du rapport formaté
+  UI Admin --> Administrateur: Afficher le rapport à l'écran (Tableaux, Graphiques, etc.)
+
+  Alt [Aucun rapport disponible (Alt A1)]
+    DB --> Système de Rapports: Indiquer aucun rapport accessible
+    Système de Rapports --> UI Admin: Indiquer liste vide
+    UI Admin --> Administrateur: Afficher message "Aucun rapport disponible..."
+
+  Alt [Rapport sélectionné introuvable (Alt A2)]
+    DB --> Système de Rapports: Indiquer introuvable
+    Système de Rapports --> UI Admin: Indiquer erreur (rapport introuvable)
+    UI Admin --> Administrateur: Afficher message d'erreur
+
+  Alt [Paramètres de rapport invalides/manquants (Alt A3)]
+    Système de Rapports --> UI Admin: Indiquer Échec Validation Paramètres avec erreurs
+    UI Admin --> Administrateur: Afficher messages d'erreur sur formulaire paramètres
+
+  Alt [Aucune donnée pour le rapport (Alt A4)]
+    DB --> Système de Rapports: Retourner aucune donnée
+    Système de Rapports --> UI Admin: Indiquer aucune donnée / Envoyer rapport vide
+    UI Admin --> Administrateur: Afficher rapport vide avec message "Aucune donnée..."
+
+  Alt [Erreur Système lors génération/affichage (Exc E1)]
+    Système de Rapports -> Système de Rapports: Enregistrer log erreur
+    Système de Rapports --> UI Admin: Indiquer Échec Technique
+    UI Admin --> Administrateur: Afficher message générique

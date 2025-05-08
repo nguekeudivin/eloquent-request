@@ -1,0 +1,51 @@
+title UC 59 - Gérer la configuration système
+
+Acteurs: Super Administrateur
+Lifelines:
+  Super Administrateur
+  Interface Administration (UI Admin)
+  Système de Configuration (Backend/Système)
+  Configuration Système (Stockage/DB)
+  Service d'Audit (Audit Service)
+
+Flux:
+  Super Administrateur -> UI Admin: Se connecter à l'interface d'administration (UC 1 implicite)
+  Super Administrateur -> UI Admin: Naviguer vers section Configuration Système
+
+  UI Admin -> Système de Configuration: Demander paramètres de configuration globaux
+  Système de Configuration -> Configuration Système: Récupérer tous les paramètres de configuration
+  Configuration Système --> Système de Configuration: Retourner paramètres et valeurs
+  Système de Configuration --> UI Admin: Envoyer paramètres et valeurs
+  UI Admin --> Super Administrateur: Afficher interface de configuration (champs modifiables, organisés par section)
+
+  Super Administrateur -> UI Admin: Visualiser et modifier les valeurs d'un ou plusieurs paramètres
+  Super Administrateur -> UI Admin: Cliquer "Enregistrer" / "Sauvegarder la configuration"
+
+  UI Admin -> Système de Configuration: Envoyer les paramètres modifiés [Paramètres et Nouvelles Valeurs]
+
+  Système de Configuration -> Système de Configuration: Valider les valeurs des paramètres modifiés (Alt A2)
+
+  Alt [Validation réussie]
+    Système de Configuration -> Configuration Système: Mettre à jour les paramètres dans la source de configuration
+    Configuration Système --> Système de Configuration: Confirmation sauvegarde
+    Système de Configuration -> Service d'Audit: Enregistrer action modification configuration (Qui, Quand, Paramètres Modifiés)
+    Service d'Audit --> Système de Configuration: Confirmation audit
+    Système de Configuration --> UI Admin: Indiquer Succès Sauvegarde Configuration
+    UI Admin --> Super Administrateur: Afficher message succès ("Configuration mise à jour...")
+
+    Opt [Modifications nécessitent redémarrage/rechargement (Exc E2)]
+      Système de Configuration -> Système de Configuration: Déclencher redémarrage service / rechargement config
+      ' Le succès ou l'échec de cette opération peut être journalisé ou notifié séparément (Exc E2)
+
+  Alt [Validation KO (Alt A2)]
+    Système de Configuration --> UI Admin: Indiquer Échec Validation avec erreurs/motifs
+    UI Admin --> Super Administrateur: Afficher messages d'erreur sur les champs concernés
+
+  Alt [Erreur Système lors sauvegarde (Exc E1)]
+    Système de Configuration -> Système de Configuration: Enregistrer log d'erreur technique
+    Système de Configuration --> UI Admin: Indiquer Échec Technique
+    UI Admin --> Super Administrateur: Afficher message générique
+
+  Alt [Annulation par le Super Administrateur (Alt A1)]
+    Super Administrateur --> UI Admin: Cliquer "Annuler" / Quitter
+    UI Admin --> Super Administrateur: Abandonner modifications

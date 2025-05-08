@@ -1,0 +1,57 @@
+title UC 57 - Consulter les notifications
+
+Acteurs: Utilisateur (Mutualiste ou Administrateur)
+Lifelines:
+  Utilisateur
+  Interface Utilisateur (UI)
+  Système de Notification (Backend/Système)
+  Base de Données (DB)
+
+Flux:
+  Utilisateur -> UI: Se connecter au système (UC 1 ou authentification Admin)
+  Utilisateur -> UI: Remarquer indicateur de notifications non lues (Optionnel)
+  Utilisateur -> UI: Cliquer sur indicateur ou naviguer vers section "Notifications"
+
+  UI -> Système de Notification: Demander liste des notifications pour l'utilisateur [ID Utilisateur]
+
+  Système de Notification -> DB: Interroger base pour notifications destinées à cet utilisateur [ID Utilisateur]
+
+  Alt [Notifications trouvées (Alt A1 si aucune)]
+    DB --> Système de Notification: Retourner liste notifications (Résumé, Statut lecture)
+    Système de Notification --> UI: Envoyer liste notifications
+    UI --> Utilisateur: Afficher liste des notifications (Résumé: Date, Titre, Aperçu, Indicateur lu/non lu)
+
+    Opt [Utilisateur sélectionne une notification]
+      Utilisateur -> UI: Sélectionner une notification [ID Notification]
+      UI -> Système de Notification: Demander contenu complet et/ou élément lié [ID Notification]
+
+      Alt [Notification sélectionnée trouvée (Alt A2 si introuvable)]
+        Système de Notification -> DB: Récupérer détails notification (Contenu, Lien éventuel) [ID Notification]
+        DB --> Système de Notification: Retourner détails notification
+        Système de Notification --> UI: Envoyer détails notification et/ou initier navigation vers élément lié
+        UI --> Utilisateur: Afficher contenu notification complète ou naviguer vers élément lié
+
+        Opt [Marquer comme lue]
+          UI -> Système de Notification: Marquer notification comme lue [ID Notification, ID Utilisateur]
+          Système de Notification -> DB: Mettre à jour statut lecture notification pour cet utilisateur
+          DB --> Système de Notification: Confirmation statut lecture
+
+      Alt [Notification sélectionnée introuvable (Alt A2)]
+        DB --> Système de Notification: Indiquer introuvable
+        Système de Notification --> UI: Indiquer erreur (notification introuvable)
+        UI --> Utilisateur: Afficher message d'erreur
+
+    Alt [Erreur Système lors récupération détails (Exc E1 partie 2)]
+      Système de Notification -> Système de Notification: Enregistrer log erreur
+      Système de Notification --> UI: Indiquer échec récupération détails
+      UI --> Utilisateur: Afficher message d'erreur
+
+  Alt [Aucune notification pour cet utilisateur (Alt A1)]
+    DB --> Système de Notification: Indiquer liste vide
+    Système de Notification --> UI: Indiquer liste vide
+    UI --> Utilisateur: Afficher message "Aucune notification..." ou liste vide
+
+  Alt [Erreur Système lors récupération liste (Exc E1 partie 1)]
+    Système de Notification -> Système de Notification: Enregistrer log erreur
+    Système de Notification --> UI: Indiquer échec récupération liste
+    UI --> Utilisateur: Afficher message d'erreur

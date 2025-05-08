@@ -1,0 +1,55 @@
+title UC 50 - Visualiser ses messages (Mutualiste)
+
+Acteurs: Mutualiste
+Lifelines:
+  Mutualiste
+  Interface Utilisateur (UI)
+  Système Messagerie Interne (Backend/Système)
+  Base de Données (DB)
+
+Flux:
+  Mutualiste -> UI: Se connecter à son espace personnel (UC 1)
+  Mutualiste -> UI: Naviguer vers section "Messagerie" / "Mes Messages"
+
+  UI -> Système Messagerie Interne: Demander liste conversations/messages du mutualiste [ID Mutualiste]
+  Système Messagerie Interne -> DB: Interroger base pour conversations/messages associés à ce mutualiste [ID Mutualiste]
+
+  Alt [Conversations/messages trouvés (Alt A1 si aucun)]
+    DB --> Système Messagerie Interne: Retourner liste (Résumé: Sujet, Expéditeur Admin, Date dernier message, Statut lecture)
+    Système Messagerie Interne --> UI: Envoyer liste conversations/messages
+    UI --> Mutualiste: Afficher liste conversations/messages dans l'interface messagerie
+
+    Opt [Mutualiste sélectionne une conversation]
+      Mutualiste -> UI: Sélectionner une conversation [ID Conversation]
+      UI -> Système Messagerie Interne: Demander fil de conversation [ID Conversation]
+
+      Alt [Conversation sélectionnée trouvée (Alt A2 si introuvable)]
+        Système Messagerie Interne -> DB: Récupérer tous les messages de la conversation (accessibles au mutualiste) [ID Conversation]
+        DB --> Système Messagerie Interne: Retourner messages (Contenu, Expéditeur/Origine, Date/Heure)
+        Sistema Messagerie Interne --> UI: Envoyer messages pour affichage fil
+        UI --> Mutualiste: Afficher fil de conversation
+
+        Opt [Messages non lus marqués "lus"]
+          UI -> Système Messagerie Interne: Marquer messages non lus comme lus [ID Conversation, ID Mutualiste]
+          Système Messagerie Interne -> DB: Mettre à jour statut lecture messages pour le mutualiste
+          DB --> Système Messagerie Interne: Confirmation statut lecture
+
+      Alt [Conversation sélectionnée introuvable (Alt A2)]
+        DB --> Système Messagerie Interne: Indiquer introuvable
+        Système Messagerie Interne --> UI: Indiquer erreur (conversation introuvable)
+        UI --> Mutualiste: Afficher message d'erreur / Rester sur liste
+
+    Alt [Erreur Système lors récupération fil (Exc E1 partie 2)]
+      Système Messagerie Interne -> Système Messagerie Interne: Enregistrer log erreur
+      Système Messagerie Interne --> UI: Indiquer échec récupération fil
+      UI --> Mutualiste: Afficher message d'erreur
+
+  Alt [Aucune conversation/message associé (Alt A1)]
+    DB --> Système Messagerie Interne: Indiquer liste vide
+    Système Messagerie Interne --> UI: Indiquer liste vide
+    UI --> Mutualiste: Afficher message "Vous n'avez aucun message" ou liste vide
+
+  Alt [Erreur Système lors récupération liste (Exc E1 partie 1)]
+    Système Messagerie Interne -> Système Messagerie Interne: Enregistrer log erreur
+    Système Messagerie Interne --> UI: Indiquer échec récupération liste
+    UI --> Mutualiste: Afficher message d'erreur

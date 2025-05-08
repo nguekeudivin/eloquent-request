@@ -1,0 +1,57 @@
+title UC 18 - Relancer un mutualiste
+
+Acteurs: Administrateur
+Lifelines:
+  Administrateur
+  Interface Administration (UI Admin)
+  Système de Relance (Backend/Système)
+  Base de Données (DB)
+  Service d'Envoi SMS (Passerelle SMS)
+  Service de Messagerie Interne (Système)
+  Service d'Audit (Audit Service)
+
+Flux:
+  Administrateur -> UI Admin: Accéder section relance / dossier mutualiste / liste retards
+  Administrateur -> UI Admin: Identifier et sélectionner mutualiste/prêt à relancer [ID Mutualiste/Prêt]
+
+  UI Admin -> Système de Relance: Demander options de relance [ID Mutualiste/Prêt]
+  Système de Relance -> DB: Récupérer coordonnées mutualiste et infos prêt [ID Mutualiste/Prêt]
+  DB --> Système de Relance: Retourner coordonnées et infos
+  Système de Relance --> UI Admin: Envoyer méthodes disponibles et modèles de messages
+  UI Admin --> Administrateur: Afficher interface de composition relance (Méthodes, Modèles)
+
+  Administrateur -> UI Admin: Choisir méthode (SMS/Messagerie Interne), sélectionner modèle ou rédiger message
+  Administrateur -> UI Admin: Cliquer "Envoyer"
+
+  UI Admin -> Système de Relance: Envoyer contenu message et méthode choisie [ID Mutualiste/Prêt, Contenu, Méthode]
+
+  Système de Relance -> DB: Vérifier validité coordonnées pour méthode [ID Mutualiste]
+  DB --> Système de Relance: Résultat vérification coordonnées
+
+  Alt [Coordonnées valides et Service d'envoi disponible]
+    Alt [Méthode = SMS]
+      Système de Relance -> Service d'Envoi SMS: Envoyer SMS [Numéro Téléphone, Contenu]
+      Service d'Envoi SMS --> Système de Relance: Statut de l'envoi (Succès/Échec)
+    Alt [Méthode = Messagerie Interne]
+      Système de Relance -> Service de Messagerie Interne: Créer et envoyer message interne [ID Mutualiste, Contenu]
+      Service de Messagerie Interne --> Système de Relance: Statut de l'envoi (Succès/Échec)
+
+    Système de Relance -> Service d'Audit: Enregistrer action relance (Qui, Quand, À Qui, Contenu, Méthode, Statut envoi)
+    Service d'Audit --> Système de Relance: Confirmation audit
+
+    Système de Relance --> UI Admin: Indiquer Succès Envoi (avec statut si disponible)
+    UI Admin --> Administrateur: Afficher message de confirmation ("Relance envoyée...")
+
+  Alt [Coordonnées invalides ou Service indisponible (Alt A3, Exc E2)]
+    Système de Relance -> Système de Relance: Enregistrer échec technique/coordonnées
+    Système de Relance --> UI Admin: Indiquer Échec Envoi (avec motif)
+    UI Admin --> Administrateur: Afficher message d'erreur ("Envoi impossible...")
+
+  Alt [Mutualiste/Prêt introuvable (Exc E1)]
+    DB --> Système de Relance: Indiquer introuvable
+    Système de Relance --> UI Admin: Indiquer erreur (introuvable)
+    UI Admin --> Administrateur: Afficher message d'erreur
+
+  Alt [Annulation par l'Administrateur (Alt A1)]
+    Administrateur --> UI Admin: Cliquer "Annuler"
+    UI Admin --> Administrateur: Fermer interface / Rediriger

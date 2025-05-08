@@ -1,0 +1,108 @@
+title UC 58 - Gérer les notifications (Admin)
+
+Acteurs: Administrateur
+Lifelines:
+  Administrateur
+  Interface Administration (UI Admin)
+  Système de Notification (Backend/Système)
+  Base de Données (DB)
+  Service d'Audit (Audit Service)
+  Service d'Envoi Email/SMS (Externe)
+
+Flux:
+  Administrateur -> UI Admin: Se connecter à interface administration
+  Administrateur -> UI Admin: Naviguer vers section "Gestion des notifications"
+
+  UI Admin --> Administrateur: Afficher interface gestion (Sections Configuration, Historique, Envoi Manuel)
+
+  Alt [Sous-Scénario A : Configurer les notifications automatiques]
+    Administrateur -> UI Admin: Accéder section Configuration
+    UI Admin -> Système de Notification: Demander configuration notifications automatiques
+    Système de Notification -> DB: Récupérer configuration actuelle
+    DB --> Système de Notification: Retourner configuration
+    Système de Notification --> UI Admin: Envoyer configuration actuelle
+    UI Admin --> Administrateur: Afficher paramètres de configuration
+
+    Administrateur -> UI Admin: Modifier paramètres (Activer/Désactiver types, Choisir canaux, Définir destinataires)
+    Administrateur -> UI Admin: Cliquer "Enregistrer modifications"
+
+    UI Admin -> Système de Notification: Envoyer nouvelle configuration [Paramètres Modifiés]
+    Système de Notification -> Système de Notification: Valider paramètres (Alt A2)
+    Alt [Validation réussie]
+      Système de Notification -> DB: Mettre à jour configuration notifications automatiques
+      DB --> Système de Notification: Confirmation sauvegarde configuration
+      Système de Notification -> Service d'Audit: Enregistrer action configuration notifications (Qui, Quand, Modifications)
+      Service d'Audit --> Système de Notification: Confirmation audit
+      Système de Notification --> UI Admin: Indiquer Succès Configuration
+      UI Admin --> Administrateur: Afficher message succès
+
+    Alt [Validation KO (Alt A2)]
+      Système de Notification --> UI Admin: Indiquer Échec Validation avec erreurs/motifs
+      UI Admin --> Administrateur: Afficher messages d'erreur
+
+    Alt [Erreur Système lors sauvegarde configuration (Exc E1 partie 1)]
+      Système de Notification -> Système de Notification: Enregistrer log erreur
+      Système de Notification --> UI Admin: Indiquer Échec Technique
+      UI Admin --> Administrateur: Afficher message générique
+
+  Alt [Sous-Scénario H : Consulter l'historique des notifications envoyées]
+    Administrateur -> UI Admin: Accéder section Historique
+    UI Admin -> Système de Notification: Demander historique notifications envoyées (avec filtres/tri)
+    Système de Notification -> DB: Interroger base pour historique notifications
+    Alt [Historique trouvé (Alt A3 si aucun)]
+      DB --> Système de Notification: Retourner liste notifications envoyées
+      Système de Notification --> UI Admin: Envoyer liste historique (avec infos: Type, Destinataire(s), Date, Canal, Statut Envoi)
+      UI Admin --> Administrateur: Afficher tableau/liste historique notifications
+
+      Opt [Administrateur consulte détails/contenu notification]
+        Administrateur -> UI Admin: Sélectionner notification dans historique [ID Notification]
+        UI Admin -> Système de Notification: Demander contenu/détails envoi notification historique [ID Notification]
+        Système de Notification -> DB: Récupérer contenu/détails envoi
+        DB --> Système de Notification: Retourner données
+        Système de Notification --> UI Admin: Envoyer données pour affichage
+        UI Admin --> Administrateur: Afficher détails/contenu notification historique
+
+    Alt [Aucune notification dans l'historique (Alt A3)]
+      DB --> Système de Notification: Indiquer liste vide
+      Système de Notification --> UI Admin: Indiquer liste vide
+      UI Admin --> Administrateur: Afficher message "Aucun historique de notification..."
+
+    Alt [Erreur Système lors récupération historique (Exc E1 partie 2)]
+      Système de Notification -> Système de Notification: Enregistrer log erreur
+      Système de Notification --> UI Admin: Indiquer Échec Technique
+      UI Admin --> Administrateur: Afficher message générique
+
+  Alt [Sous-Scénario M : Envoyer une notification manuelle]
+    Administrateur -> UI Admin: Accéder section Envoi Manuel
+    UI Admin --> Administrateur: Afficher formulaire composition notification manuelle
+
+    Administrateur -> UI Admin: Sélectionner destinataire(s), Saisir Sujet/Titre, Rédiger Contenu, Choisir Canal(aux) (Alt A2)
+    Administrateur -> UI Admin: Cliquer "Envoyer"
+
+    UI Admin -> Système de Notification: Envoyer demande envoi notification manuelle [Destinataire(s), Sujet, Contenu, Canaux]
+    Système de Notification -> Système de Notification: Valider message/destinataires/canaux (Alt A2)
+    Alt [Validation réussie]
+      Système de Notification -> DB: Créer enregistrement notification manuelle
+      DB --> Système de Notification: Confirmation enregistrement
+      Système de Notification -> Service d'Audit: Enregistrer action envoi notification manuelle (Qui, Quand, Destinataire(s), Sujet)
+      Service d'Audit --> Système de Notification: Confirmation audit
+      Système de Notification -> Service d'Envoi Email/SMS: Initier envoi(s) vers destinataire(s) via canal(aux) choisi(s)
+      Service d'Envoi Email/SMS --> Système de Notification: Statut(s) d'envoi (Succès/Échec) (Exc E2)
+      Système de Notification -> DB: Mettre à jour statut(s) d'envoi dans historique
+      DB --> Système de Notification: Confirmation statut(s)
+
+      Système de Notification --> UI Admin: Indiquer Succès Envoi Notification Manuelle (avec statut(s) si disponible)
+      UI Admin --> Administrateur: Afficher message succès
+
+    Alt [Validation KO (Alt A2)]
+      Système de Notification --> UI Admin: Indiquer Échec Validation avec erreurs/motifs
+      UI Admin --> Administrateur: Afficher messages d'erreur sur formulaire
+
+    Alt [Erreur Système lors envoi (Exc E2)]
+      Système de Notification -> Système de Notification: Enregistrer log erreur
+      Système de Notification --> UI Admin: Indiquer Échec Technique
+      UI Admin --> Administrateur: Afficher message générique
+
+  Alt [Annulation par l'Administrateur (Alt A1)]
+    Administrateur --> UI Admin: Cliquer "Annuler" / Quitter
+    UI Admin --> Administrateur: Abandonner modifications/envoi

@@ -1,0 +1,46 @@
+title UC 74 - Visualiser la santé financière à J-1
+
+Acteurs: Administrateur
+Lifelines:
+  Administrateur
+  Interface Administration (UI Admin)
+  Système Financier (Backend/Système)
+  Base de Données (DB)
+  Module Cotisations (Backend/Système)
+  Module Prestations (Backend/Système)
+  Module Dépenses (Backend/Système)
+  Module Trésorerie (Backend/Système)
+
+Flux:
+  Administrateur -> UI Admin: Se connecter à interface administration
+  Administrateur -> UI Admin: Naviguer vers section rapports / santé financière J-1
+
+  UI Admin -> Système Financier: Demander rapport santé financière à J-1
+
+  Alt [Données de J-1 disponibles (Alt A1 si non)]
+    Système Financier -> DB: Récupérer données agrégées/résumées de J-1 (potentiellement via vues matérialisées, processus batch quotidien)
+
+    Opt [Données non pré-calculées, agrégation en temps réel]
+      Système Financier -> Module Cotisations: Demander agrégat cotisations J-1
+      Module Cotisations --> Système Financier: Retourner chiffres J-1
+      Système Financier -> Module Prestations: Demander agrégat prestations réglées J-1
+      Module Prestations --> Système Financier: Retourner chiffres J-1
+      Système Financier -> Module Dépenses: Demander agrégat dépenses J-1
+      Module Dépenses --> Système Financier: Retourner chiffres J-1
+      Système Financier -> Module Trésorerie: Demander solde caisse/banque J-1
+      Module Trésorerie --> Système Financier: Retourner soldes J-1
+
+    DB --> Système Financier: Retourner données agrégées ou brutes J-1
+    Système Financier -> Système Financier: Consolider et formater le rapport synthétique
+
+    Système Financier --> UI Admin: Envoyer contenu du rapport santé financière J-1
+    UI Admin --> Administrateur: Afficher le rapport ou tableau de bord de santé financière
+
+  Alt [Données de J-1 non disponibles (Alt A1)]
+    Système Financier --> UI Admin: Indiquer données J-1 non disponibles
+    UI Admin --> Administrateur: Afficher message "Données financières J-1 non disponibles..."
+
+  Alt [Erreur Système lors génération (Exc E1)]
+    Système Financier -> Système Financier: Enregistrer log erreur
+    Système Financier --> UI Admin: Indiquer Échec Technique
+    UI Admin --> Administrateur: Afficher message générique

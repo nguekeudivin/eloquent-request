@@ -1,0 +1,55 @@
+title UC 48 - Visualiser les messages (Admin)
+
+Acteurs: Administrateur
+Lifelines:
+  Administrateur
+  Interface Administration (UI Admin)
+  Système Messagerie Interne (Backend/Système)
+  Base de Données (DB)
+
+Flux:
+  Administrateur -> UI Admin: Se connecter à interface administration
+  Administrateur -> UI Admin: Naviguer vers section "Messagerie Interne"
+
+  UI Admin -> Système Messagerie Interne: Demander liste conversations/messages accessibles à cet Admin [ID Administrateur]
+  Système Messagerie Interne -> DB: Interroger base pour conversations/messages accessibles (basé sur droits/assignation) [ID Administrateur]
+
+  Alt [Conversations/messages trouvés (Alt A1 si aucun)]
+    DB --> Système Messagerie Interne: Retourner liste (Résumé: Sujet, Mutualiste, Date dernier message, Statut lecture)
+    Système Messagerie Interne --> UI Admin: Envoyer liste conversations/messages
+    UI Admin --> Administrateur: Afficher liste conversations/messages dans l'interface messagerie
+
+    Opt [Administrateur sélectionne une conversation]
+      Administrateur -> UI Admin: Sélectionner une conversation [ID Conversation]
+      UI Admin -> Système Messagerie Interne: Demander fil de conversation [ID Conversation]
+
+      Alt [Conversation sélectionnée trouvée (Alt A2 si introuvable)]
+        Système Messagerie Interne -> DB: Récupérer tous les messages de la conversation [ID Conversation]
+        DB --> Système Messagerie Interne: Retourner messages (Contenu, Expéditeur, Date/Heure)
+        Système Messagerie Interne --> UI Admin: Envoyer messages pour affichage fil
+        UI Admin --> Administrateur: Afficher fil de conversation
+
+        Opt [Messages non lus marqués "lus"]
+          UI Admin -> Système Messagerie Interne: Marquer messages non lus comme lus [ID Conversation, ID Administrateur]
+          Système Messagerie Interne -> DB: Mettre à jour statut lecture messages
+          DB --> Système Messagerie Interne: Confirmation statut lecture
+
+      Alt [Conversation sélectionnée introuvable (Alt A2)]
+        DB --> Système Messagerie Interne: Indiquer introuvable
+        Système Messagerie Interne --> UI Admin: Indiquer erreur (conversation introuvable)
+        UI Admin --> Administrateur: Afficher message d'erreur / Rester sur liste
+
+    Alt [Erreur Système lors récupération fil (Exc E1 partie 2)]
+      Système Messagerie Interne -> Système Messagerie Interne: Enregistrer log erreur
+      Système Messagerie Interne --> UI Admin: Indiquer échec récupération fil
+      UI Admin --> Administrateur: Afficher message d'erreur
+
+  Alt [Aucune conversation/message accessible (Alt A1)]
+    DB --> Système Messagerie Interne: Indiquer liste vide
+    Système Messagerie Interne --> UI Admin: Indiquer liste vide
+    UI Admin --> Administrateur: Afficher message "Aucun message dans votre boîte de réception"
+
+  Alt [Erreur Système lors récupération liste (Exc E1 partie 1)]
+    Système Messagerie Interne -> Système Messagerie Interne: Enregistrer log erreur
+    Système Messagerie Interne --> UI Admin: Indiquer échec récupération liste
+    UI Admin --> Administrateur: Afficher message d'erreur

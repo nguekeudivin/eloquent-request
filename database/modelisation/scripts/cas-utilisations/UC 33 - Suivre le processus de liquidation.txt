@@ -1,0 +1,35 @@
+title UC 33 - Suivre le processus de liquidation
+
+Acteurs: Administrateur
+Lifelines:
+  Administrateur
+  Interface Administration (UI Admin)
+  Système de Gestion Liquidations (Backend/Système)
+  Base de Données (DB)
+  Système de Gestion Documents (Optionnel)
+
+Flux:
+  Administrateur -> UI Admin: Accéder section suivi liquidations
+  Administrateur -> UI Admin: Rechercher/Sélectionner procédure de liquidation [ID Procédure]
+
+  UI Admin -> Système de Gestion Liquidations: Demander informations détaillées suivi liquidation [ID Procédure]
+
+  Système de Gestion Liquidations -> DB: Récupérer enregistrement procédure (Statut, Dates, Bénéficiaires, Événement, Résultat Calcul, Historique étapes) [ID Procédure]
+
+  Alt [Procédure trouvée]
+    DB --> Système de Gestion Liquidations: Retourner données procédure
+    Opt [Documents liés]
+      Système de Gestion Liquidations -> Système de Gestion Documents: Demander liste documents liés [ID Procédure]
+      Système de Gestion Documents --> Système de Gestion Liquidations: Retourner références documents
+    Système de Gestion Liquidations --> UI Admin: Envoyer informations détaillées de la procédure (y compris résultat calcul et refs documents si disponibles)
+    UI Admin --> Administrateur: Afficher vue détaillée du suivi de la liquidation
+
+  Alt [Procédure introuvable (Alt A2)]
+    DB --> Système de Gestion Liquidations: Indiquer introuvable
+    Système de Gestion Liquidations --> UI Admin: Indiquer erreur (procédure introuvable)
+    UI Admin --> Administrateur: Afficher message d'erreur
+
+  Alt [Erreur Système lors récupération (Exc E1)]
+    Système de Gestion Liquidations -> Système de Gestion Liquidations: Enregistrer log d'erreur technique
+    Système de Gestion Liquidations --> UI Admin: Indiquer Échec Technique
+    UI Admin --> Administrateur: Afficher message d'erreur générique

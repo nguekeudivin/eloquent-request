@@ -1,0 +1,30 @@
+title UC 11 - Visualiser la liste de ses ayants droit
+
+Acteurs: Mutualiste
+Lifelines:
+  Mutualiste
+  Interface Utilisateur (UI)
+  Système de Gestion Ayants Droit (Backend/Système)
+  Base de Données (DB)
+
+Flux:
+  Mutualiste -> UI: Se connecter à son espace personnel (UC 1)
+  Mutualiste -> UI: Naviguer vers la zone d'affichage des ayants droit ("Mes Ayants Droit" ou Tableau de Bord)
+
+  UI -> Système de Gestion Ayants Droit: Demander liste ayants droit du mutualiste [ID Mutualiste]
+
+  Système de Gestion Ayants Droit -> DB: Interroger base pour ayants droit rattachés [ID Mutualiste]
+  DB --> Système de Gestion Ayants Droit: Retourner liste des ayants droit (ou liste vide)
+
+  Opt [Aucun ayant droit trouvé (Alt A1)]
+    Système de Gestion Ayants Droit --> UI: Indiquer liste vide
+    UI --> Mutualiste: Afficher message "Vous n'avez pas encore d'ayants droit enregistrés" ou liste vide
+
+  Else [Liste d'ayants droit non vide]
+    Système de Gestion Ayants Droit --> UI: Envoyer liste des ayants droit (avec infos clés et statut)
+    UI --> Mutualiste: Afficher la liste des ayants droit sous forme de tableau/liste
+
+  Alt [Erreur Système lors récupération (Exc E1)]
+    Système de Gestion Ayants Droit -> Système de Gestion Ayants Droit: Enregistrer log d'erreur technique
+    Système de Gestion Ayants Droit --> UI: Indiquer Échec Technique
+    UI --> Mutualiste: Afficher message d'erreur générique ("Impossible de charger la liste des ayants droit")

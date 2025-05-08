@@ -1,0 +1,46 @@
+title UC 56 - Gérer la politique de mot de passe
+
+Acteurs: Super Administrateur
+Lifelines:
+  Super Administrateur
+  Interface Administration (UI Admin)
+  Système de Sécurité (Backend/Système)
+  Configuration Système (Stockage)
+  Service d'Audit (Audit Service)
+
+Flux:
+  Super Administrateur -> UI Admin: Se connecter à l'interface d'administration (UC 1 implicite)
+  Super Administrateur -> UI Admin: Naviguer vers section Sécurité / Politique de mot de passe
+
+  UI Admin -> Système de Sécurité: Demander paramètres politique mot de passe actuelle
+  Système de Sécurité -> Configuration Système: Récupérer paramètres politique mot de passe
+  Configuration Système --> Système de Sécurité: Retourner paramètres
+  Système de Sécurité --> UI Admin: Envoyer paramètres actuels
+  UI Admin --> Super Administrateur: Afficher interface de configuration (champs modifiables)
+
+  Super Administrateur -> UI Admin: Visualiser et modifier les valeurs des paramètres (Complexité, Longueur, Durée de vie, Verrouillage, Portée)
+  Super Administrateur -> UI Admin: Cliquer "Enregistrer" / "Appliquer"
+
+  UI Admin -> Système de Sécurité: Envoyer nouveaux paramètres politique mot de passe [Paramètres Modifiés]
+
+  Système de Sécurité -> Système de Sécurité: Valider les valeurs des paramètres (Alt A2)
+  Alt [Validation réussie]
+    Système de Sécurité -> Configuration Système: Mettre à jour paramètres politique mot de passe
+    Configuration Système --> Système de Sécurité: Confirmation sauvegarde
+    Système de Sécurité -> Service d'Audit: Enregistrer action modification politique (Qui, Quand, Modifications)
+    Service d'Audit --> Système de Sécurité: Confirmation audit
+    Système de Sécurité --> UI Admin: Indiquer Succès Mise à Jour
+    UI Admin --> Super Administrateur: Afficher message succès ("Politique mise à jour...")
+
+  Alt [Validation KO (Alt A2)]
+    Système de Sécurité --> UI Admin: Indiquer Échec Validation avec erreurs/motifs
+    UI Admin --> Super Administrateur: Afficher messages d'erreur sur les champs
+
+  Alt [Erreur Système lors sauvegarde (Exc E1)]
+    Système de Sécurité -> Système de Sécurité: Enregistrer log d'erreur technique
+    Système de Sécurité --> UI Admin: Indiquer Échec Technique
+    UI Admin --> Super Administrateur: Afficher message générique
+
+  Alt [Annulation par le Super Administrateur (Alt A1)]
+    Super Administrateur --> UI Admin: Cliquer "Annuler" / Quitter
+    UI Admin --> Super Administrateur: Abandonner modifications

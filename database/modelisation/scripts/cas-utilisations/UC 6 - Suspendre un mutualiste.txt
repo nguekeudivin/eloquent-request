@@ -1,0 +1,69 @@
+title UC 6 - Suspendre un mutualiste
+
+Acteurs: Administrateur
+Lifelines:
+  Administrateur
+  Interface Administration (UI Admin)
+  Système de Gestion Adhérents (Backend/Système)
+  Base de Données (DB)
+  Service d'Audit (Audit Service)
+  Service de Notification (Email/SMS Service)
+
+Flux:
+  Administrateur -> UI Admin: Accéder section gestion adhérents
+  Administrateur -> UI Admin: Rechercher/Sélectionner mutualiste à suspendre [ID Mutualiste]
+
+  UI Admin -> Système de Gestion Adhérents: Demander informations mutualiste [ID Mutualiste]
+  Système de Gestion Adhérents -> DB: Récupérer informations mutualiste (y compris statut actuel) [ID Mutualiste]
+
+  Alt [Mutualiste trouvé et suspensible]
+    DB --> Système de Gestion Adhérents: Retourner informations
+    Système de Gestion Adhérents --> UI Admin: Envoyer informations
+    UI Admin --> Administrateur: Afficher informations et option "Suspendre"
+
+    Administrateur -> UI Admin: Cliquer "Suspendre"
+    UI Admin --> Administrateur: Afficher boîte de confirmation/motif
+
+    Administrateur -> UI Admin: Confirmer suspension (avec motif si fourni)
+    UI Admin -> Système de Gestion Adhérents: Envoyer requête de suspension [ID Mutualiste, Motif]
+
+    Système de Gestion Adhérents -> DB: Vérifier statut actuel du mutualiste [ID Mutualiste]
+    DB --> Système de Gestion Adhérents: Retourner statut actuel
+
+    Alt [Statut actuel permet suspension]
+      Système de Gestion Adhérents -> DB: Mettre à jour statut mutualiste à "Suspendu" [ID Mutualiste]
+      DB --> Système de Gestion Adhérents: Confirmation mise à jour statut
+      Système de Gestion Adhérents -> DB: Ajuster permissions/droits associés au statut "Suspendu" [ID Mutualiste]
+      DB --> Système de Gestion Adhérents: Confirmation ajustement
+      Système de Gestion Adhérents -> Service d'Audit: Enregistrer action suspension (Qui, Quand, Mutualiste, Motif)
+      Service d'Audit --> Système de Gestion Adhérents: Confirmation audit
+
+      Système de Gestion Adhérents -> Service de Notification: Envoyer notification de suspension au mutualiste (avec motif/conséquences)
+      Opt [Échec envoi notification (Scénario d'Exception E3)]
+        Service de Notification --> Système de Gestion Adhérents: Indiquer échec envoi
+        Système de Gestion Adhérents -> Système de Gestion Adhérents: Enregistrer log échec notification
+        Système de Gestion Adhérents --> UI Admin: Indiquer Succès Suspension AVEC avertissement
+      Else [Envoi notification réussi]
+        Service de Notification --> Système de Gestion Adhérents: Indiquer succès envoi
+        Système de Gestion Adhérents --> UI Admin: Indiquer Succès Suspension
+
+      UI Admin --> Administrateur: Afficher message de confirmation succès
+
+    Alt [Statut actuel ne permet pas suspension (Scénario Alternatif A3)]
+      Système de Gestion Adhérents --> UI Admin: Indiquer Échec Suspension (Statut non éligible)
+      UI Admin --> Administrateur: Afficher message d'erreur ("Action non applicable dans l'état actuel")
+
+    Alt [Erreur Système lors traitement (Scénario d'Exception E2)]
+      Système de Gestion Adhérents -> Système de Gestion Adhérents: Enregistrer log d'erreur technique
+      Système de Gestion Adhérents --> UI Admin: Indiquer Échec Technique
+      UI Admin --> Administrateur: Afficher message d'erreur générique
+
+  Alt [Mutualiste introuvable (Scénario d'Exception E1)]
+    DB --> Système de Gestion Adhérents: Indiquer mutualiste non trouvé
+    Système de Gestion Adhérents --> UI Admin: Indiquer erreur (mutualiste introuvable)
+    UI Admin --> Administrateur: Afficher message d'erreur
+    UI Admin --> Administrateur: Rediriger
+
+  Alt [Annulation par l'Administrateur (Scénario Alternatif A1)]
+    Administrateur --> UI Admin: Cliquer "Annuler" sur la boîte de confirmation
+    UI Admin --> Administrateur: Fermer boîte / Rediriger (pas d'action backend)

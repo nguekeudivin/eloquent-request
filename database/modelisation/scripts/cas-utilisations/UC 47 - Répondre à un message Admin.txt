@@ -1,0 +1,68 @@
+title UC 47 - Répondre à un message (Admin)
+
+Acteurs: Administrateur
+Lifelines:
+  Administrateur
+  Interface Administration (UI Admin)
+  Système Messagerie Interne (Backend/Système)
+  Base de Données (DB)
+  Système de Gestion Documents (Optionnel - pour pièces jointes)
+  Service d'Audit (Audit Service)
+  Service de Notification Mutualiste (Email/Interne)
+
+Flux:
+  Administrateur -> UI Admin: Se connecter à interface administration
+  Administrateur -> UI Admin: Naviguer vers section "Messagerie Interne"
+  UI Admin --> Administrateur: Afficher interface messagerie (UC 48 implicite)
+
+  Administrateur -> UI Admin: Sélectionner une conversation avec un mutualiste [ID Conversation]
+  UI Admin -> Système Messagerie Interne: Demander fil de conversation [ID Conversation]
+
+  Alt [Conversation trouvée (Exc E1 si introuvable)]
+    Système Messagerie Interne -> DB: Récupérer messages de la conversation [ID Conversation]
+    DB --> Système Messagerie Interne: Retourner messages
+    Système Messagerie Interne --> UI Admin: Envoyer messages pour affichage fil de conversation
+    UI Admin --> Administrateur: Afficher fil de conversation (UC 48 implicite) avec zone de réponse
+
+    Administrateur -> UI Admin: Rédiger corps de la réponse, (Optionnel) Joindre documents
+    Administrateur -> UI Admin: Cliquer "Envoyer"
+
+    UI Admin -> Système Messagerie Interne: Envoyer réponse et pièces jointes [ID Conversation, ID Administrateur Expéditeur, Corps, Fichiers optionnels]
+
+    Système Messagerie Interne -> Système Messagerie Interne: Valider réponse (Corps non vide) (Alt A2) et pièces jointes (Alt A3)
+
+    Alt [Validation réussie]
+      Système Messagerie Interne -> DB: Créer nouvel enregistrement message réponse, associer à conversation [Données Message Réponse]
+      DB --> Système Messagerie Interne: Confirmation création message
+      Sistema Messagerie Interne -> Système Messagerie Interne: Mettre à jour statut(s) de la conversation (ex: marqué "Répondu" côté Admin) [ID Conversation]
+
+      Opt [Documents joints]
+        Système Messagerie Interne -> Système de Gestion Documents: Traiter et associer documents au message réponse
+        Système de Gestion Documents --> Système Messagerie Interne: Statut traitement documents (Alt A3 si échec)
+
+      Système Messagerie Interne -> Service d'Audit: Enregistrer action réponse message (Qui, Quand, À Qui, Conversation)
+      Service d'Audit --> Système Messagerie Interne: Confirmation audit
+
+      Système Messagerie Interne --> UI Admin: Indiquer Succès Envoi Réponse
+      UI Admin --> Administrateur: Afficher message confirmation succès
+
+      Système Messagerie Interne -> Service de Notification Mutualiste: Notifier Mutualiste destinataire de nouvelle réponse (UC 50 implicite)
+      Service de Notification Mutualiste --> Système Messagerie Interne: Statut notification (Exc E3)
+
+    Alt [Validation KO (Alt A2) ou Échec Pièce Jointe (Alt A3 qui bloque l'envoi)]
+      Système Messagerie Interne --> UI Admin: Indiquer Échec Envoi avec erreurs/motifs
+      UI Admin --> Administrateur: Afficher messages d'erreur sur zone de réponse
+
+    Alt [Erreur Système lors enregistrement/association (Exc E2)]
+      Système Messagerie Interne -> Système Messagerie Interne: Enregistrer log d'erreur technique
+      Système Messagerie Interne --> UI Admin: Indiquer Échec Technique
+      UI Admin --> Administrateur: Afficher message générique
+
+  Alt [Conversation introuvable (Exc E1)]
+    DB --> Système Messagerie Interne: Indiquer introuvable
+    Système Messagerie Interne --> UI Admin: Indiquer erreur (conversation introuvable)
+    UI Admin --> Administrateur: Afficher message d'erreur / Retour à liste conversations
+
+  Alt [Annulation par l'Administrateur (Alt A1)]
+    Administrateur --> UI Admin: Cliquer "Annuler" / Quitter
+    UI Admin --> Administrateur: Abandonner réponse

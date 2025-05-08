@@ -1,0 +1,40 @@
+title UC 68 - Visualiser la répartition des dépenses
+
+Acteurs: Administrateur
+Lifelines:
+  Administrateur
+  Interface Administration (UI Admin)
+  Système Financier (Backend/Système)
+  Base de Données (DB)
+
+Flux:
+  Administrateur -> UI Admin: Se connecter à interface administration
+  Administrateur -> UI Admin: Naviguer vers section rapports / analyse des dépenses
+
+  UI Admin --> Administrateur: Afficher interface rapport de répartition (potentiellement avec formulaire paramètres)
+
+  Administrateur -> UI Admin: Spécifier période et critère de répartition (ex: par catégorie)
+  Administrateur -> UI Admin: Cliquer "Générer Rapport"
+
+  UI Admin -> Système Financier: Envoyer requête génération rapport répartition [Période, Critère Répartition]
+
+  Système Financier -> DB: Récupérer dépenses de fonctionnement pour la période [Période]
+  DB --> Système Financier: Retourner dépenses
+  Système Financier -> Système Financier: Agréger les dépenses selon le critère de répartition
+  Système Financier -> Système Financier: Générer la visualisation du rapport (graphique, tableau synthétique)
+
+  Alt [Données trouvées pour la période (Alt A2 si aucune)]
+    Système Financier --> UI Admin: Envoyer contenu du rapport agrégé et visualisé
+    UI Admin --> Administrateur: Afficher le rapport de répartition
+
+  Alt [Paramètres manquants/invalides (Alt A1)]
+    UI Admin --> Administrateur: Afficher messages d'erreur sur formulaire paramètres
+
+  Alt [Aucune dépense pour la période (Alt A2)]
+    Système Financier --> UI Admin: Indiquer aucune donnée
+    UI Admin --> Administrateur: Afficher rapport vide avec message "Aucune dépense pour cette période/critères"
+
+  Alt [Erreur Système lors génération (Exc E1)]
+    Système Financier -> Système Financier: Enregistrer log erreur
+    Système Financier --> UI Admin: Indiquer Échec Technique
+    UI Admin --> Administrateur: Afficher message générique

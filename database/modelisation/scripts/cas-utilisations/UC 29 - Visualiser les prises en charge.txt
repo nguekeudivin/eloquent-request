@@ -1,0 +1,30 @@
+title UC 29 - Visualiser les prises en charge
+
+Acteurs: Administrateur
+Lifelines:
+  Administrateur
+  Interface Administration (UI Admin)
+  Système de Gestion Prises en Charge (Backend/Système)
+  Base de Données (DB)
+
+Flux:
+  Administrateur -> UI Admin: Accéder section consultation prises en charge
+  Administrateur -> UI Admin: Sélectionner option "Voir toutes les prises en charge"
+
+  UI Admin -> Système de Gestion Prises en Charge: Demander liste complète des prises en charge
+
+  Système de Gestion Prises en Charge -> DB: Interroger base pour toutes les prises en charge
+  Alt [Prises en charge trouvées]
+    DB --> Système de Gestion Prises en Charge: Retourner liste des prises en charge
+    Système de Gestion Prises en Charge --> UI Admin: Envoyer liste des prises en charge (avec infos clés: Réf, Date, Catégorie, Bénéficiaire(s), Montants, Statut)
+    UI Admin --> Administrateur: Afficher le tableau/la liste de toutes les prises en charge
+
+  Alt [Aucune prise en charge enregistrée (Alt A1)]
+    DB --> Système de Gestion Prises en Charge: Indiquer liste vide
+    Système de Gestion Prises en Charge --> UI Admin: Indiquer liste vide
+    UI Admin --> Administrateur: Afficher message "Aucune prise en charge enregistrée" ou liste vide
+
+  Alt [Erreur Système lors récupération (Exc E1)]
+    Système de Gestion Prises en Charge -> Système de Gestion Prises en Charge: Enregistrer log d'erreur technique
+    Système de Gestion Prises en Charge --> UI Admin: Indiquer Échec Technique
+    UI Admin --> Administrateur: Afficher message d'erreur générique
