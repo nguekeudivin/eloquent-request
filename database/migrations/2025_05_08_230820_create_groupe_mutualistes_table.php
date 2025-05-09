@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('caisses', function (Blueprint $table) {
+        Schema::create('groupe_mutualistes', function (Blueprint $table) {
             $table->id();
-            $table->string('nom', 255)->unique();
-            $table->string('description', 255)->nullable();
-            $table->string('devise', 255);
+            $table->string('libelle', 255)->unique();
             $table->timestamps();
 
             $table->string('created_by_user_id', 36)->nullable();
@@ -23,6 +21,7 @@ return new class extends Migration
 
             $table->foreign('created_by_user_id')->references('id')->on('users')->onDelete('SET NULL')->onUpdate('CASCADE');
             $table->foreign('updated_by_user_id')->references('id')->on('users')->onDelete('SET NULL')->onUpdate('CASCADE');
+
         });
     }
 
@@ -31,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('caisses');
+        Schema::dropIfExists('groupe_mutualistes');
     }
 };

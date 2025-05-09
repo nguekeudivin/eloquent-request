@@ -24,37 +24,6 @@
 
 ---
 
-**Nom de la Classe :** Mutualiste
-
-**Type :** Classe Principale (Hérite de Utilisateur)
-
-**Description :** Représente un membre (adhérent) de la mutuelle. Contient ses informations personnelles et d'adhésion.
-
-**Attributs :**
-
--   `id` : UUID / Integer {Clé Primaire, Clé Étrangère} - Identifiant unique du mutualiste (hérité de Utilisateur).
--   `numeroAdherent` : String {Unique, Non Nul} - Numéro unique attribué par la mutuelle à l'adhérent.
--   `nom` : String {Non Nul} - Nom de famille du mutualiste.
--   `prenom` : String {Non Nul} - Prénom(s) du mutualiste.
--   `dateNaissance` : Date {Non Nul} - Date de naissance.
--   `lieuNaissance` : String {Nullable} - Lieu de naissance.
--   `sexe` : Enum (H, F) {Nullable} - Sexe.
--   `adresse` : String {Nullable} - Adresse postale ou géographique.
--   `telephone` : String {Nullable} - Numéro de téléphone principal.
--   `profession` : String {Nullable} - Profession actuelle.
--   `statutSocial` : String {Nullable} - Statut social si pertinent (ex: étudiant, retraité).
--   `datePremiereAdhesion` : Date {Non Nul} - Date de sa toute première adhésion à la mutuelle.
-
-**Méthodes Possibles :**
-
--   `creerDossier(donneesPersonnelles)` : Mutualiste - Crée un nouvel enregistrement mutualiste.
--   `modifierDossier(donnees)` : Boolean - Met à jour les informations du mutualiste.
--   `ajouterAyantDroit(donneesAyantDroit)` : AyantDroit - Crée un nouvel ayant droit rattaché à ce mutualiste.
--   `ouvrirReclamation(sujet, description)` : Réclamation - Crée une nouvelle réclamation soumise par ce mutualiste.
--   `visualiserCotisations()` : List\<Cotisation\> - Récupère la liste de ses cotisations.
-
----
-
 **Nom de la Classe :** Administrateur
 
 **Type :** Classe Principale (Hérite de Utilisateur)
@@ -99,6 +68,89 @@
 
 ---
 
+**Nom de la Classe :** Mutualiste
+
+**Type :** Classe Principale (Hérite de Utilisateur)
+
+**Description :** Représente un membre (adhérent) de la mutuelle. Contient ses informations personnelles et d'adhésion.
+
+**Attributs :**
+
+-   `id` : VARCHAR(36) {Clé Primaire, Clé Étrangère}
+    -   `numero_adherent` : VARCHAR(255) {Unique, Non Nul}
+    -   `nom` : VARCHAR(255) {Non Nul}
+    -   `prenom` : VARCHAR(255) {Non Nul}
+    -   `date_naissance` : DATE {Non Nul}
+    -   `lieu_naissance` : VARCHAR(255) {Nullable}
+    -   `sexe` : ENUM (H, F, Autre) {Nullable}
+    -   `adresse` : TEXT {Nullable}
+    -   `telephone` : VARCHAR(255) {Nullable}
+    -   `profession_id` : INT {Clé Étrangère}
+    -   `poste_responsabilite_id` : INT {Clé Étrangère}
+    -   `statut_social` : VARCHAR(255) {Nullable}
+    -   `date_premiere_adhesion` : DATE {Non Nul}
+    -   `created_at` : DATETIME {Nullable}
+    -   `updated_at` : DATETIME {Nullable}
+    -   `created_by_user_id` : VARCHAR(36) {Clé Étrangère}
+    -   `updated_by_user_id` : VARCHAR(36) {Clé Étrangère}
+
+**Méthodes Possibles :**
+
+-   `creerDossier(donneesPersonnelles)` : Mutualiste - Crée un nouvel enregistrement mutualiste.
+-   `modifierDossier(donnees)` : Boolean - Met à jour les informations du mutualiste.
+-   `ajouterAyantDroit(donneesAyantDroit)` : AyantDroit - Crée un nouvel ayant droit rattaché à ce mutualiste.
+-   `ouvrirReclamation(sujet, description)` : Réclamation - Crée une nouvelle réclamation soumise par ce mutualiste.
+-   `visualiserCotisations()` : List\<Cotisation\> - Récupère la liste de ses cotisations.
+
+---
+
+**Nom de la Classe :** Profession
+**Type :** Classe Principale / Entité Lookup
+**Description :** Représente un métier ou une activité professionnelle type.
+**Attributs :**
+_ `id` : Integer {Clé Primaire, Auto-incrément}
+_ `libelle` : String {Unique, Non Nul}
+
+**Méthodes Possibles :**
+_ `creerProfession(libelle)` : Profession
+_ `modifierProfession(libelle)` : Boolean \* `listerProfessions()` : List\<Profession\>
+
+---
+
+-   **Nom de la Classe :** GroupeMutualiste
+-   **Type :** Classe Principale / Entité Lookup
+-   **Description :** Représente une catégorie ou un ensemble de postes de responsabilité pour organiser les mutualistes.
+-   **Attributs :**
+    -   `id` : Integer {Clé Primaire, Auto-incrément}
+    -   `libelle` : String {Unique, Non Nul}
+-   **Operations:**
+    -   `creerGroupe(libelle)` : GroupeMutualiste
+    -   `modifierGroupe(libelle)` : Boolean
+    -   `listerGroupes()` : List\<GroupeMutualiste\>
+    -   `listerPostes()` : List\<PosteResponsabilite\>
+
+---
+
+**Nom de la Classe :** FonctionMutualiste
+**Type :** Classe Principale / Entité Lookup
+**Description :** Représente un rôle ou une fonction spécifique au sein d'un groupe de responsabilité.
+**Attributs :**
+
+-   `id` : Identifiant de la fonction
+-   `libelle` : Libette de la function.
+-   `groupe_mutualiste_id`: L'identifiant du groupe auquel cette fonction est rattache.
+
+---
+
+**Nom de la classe:** TypeAyantDroit
+**Description:** Represente un type d'ayant droit
+
+-   `id`: Identifiant
+-   `libelle`: Libelle
+-   `description:` Description du type d'ayant droit
+
+---
+
 **Nom de la Classe :** AyantDroit
 
 **Type :** Classe Principale
@@ -108,11 +160,12 @@
 **Attributs :**
 
 -   `id` : UUID / Integer {Clé Primaire} - Identifiant unique de l'ayant droit.
+-   `type_id`: Reference le type d'ayant droit.
 -   `mutualisteId` : UUID / Integer {Clé Étrangère, Non Nul} - Référence vers le mutualiste principal auquel il est rattaché.
 -   `nom` : String {Non Nul} - Nom de famille (peut être celui du mutualiste ou le sien).
 -   `prenom` : String {Non Nul} - Prénom(s).
 -   `dateNaissance` : Date {Non Nul} - Date de naissance.
--   `lienParente` : String {Non Nul} - Ex: "Conjoint", "Enfant", "Autre". (Enum ou référence si liste finie).
+-   `gender`: Enum(masculin,feminin) - Sexe de l'ayant droit.
 -   `statut` : Enum (actif, inactif, décédé) {Non Nul} - Statut de l'ayant droit au sein de la couverture.
 
 **Méthodes Possibles :**
@@ -136,6 +189,7 @@
 -   `description` : Text {Nullable} - Description détaillée des garanties.
 -   `dateDebutValidite` : Date {Non Nul} - Date à partir de laquelle ce modèle de contrat est valide.
 -   `dateFinValidite` : Date {Nullable} - Date jusqu'à laquelle ce modèle est valide (si obsolète).
+-   `montant`: Decimal {Non Nul} - Montant de l'adhésion.
 -   `montantCotisationBase` : Decimal {Non Nul} - Montant de la cotisation standard pour ce contrat (hors options/réductions individuelles).
 -   `periodeCotisation` : Enum (Mensuel, Trimestriel, Annuel) {Non Nul} - Fréquence de la cotisation.
 -   `estActif` : Boolean {Non Nul} - Indique si ce modèle de contrat est actuellement proposé aux adhérents.
@@ -149,27 +203,12 @@
 
 ---
 
-**Nom de la Classe :** Prestation
+**Nom de la classe:** GroupeContrat
+**Description:** Definit le choix de contrat d'adhesion pour un groupe donne
+**Attributes:**
 
-**Type :** Classe Principale
-
-**Description :** Représente un type de service, soin ou acte qui peut être couvert ou proposé par la mutuelle.
-
-**Attributs :**
-
--   `id` : Integer {Clé Primaire} - Identifiant unique de la prestation.
--   `nom` : String {Unique, Non Nul} - Nom de la prestation (ex: "Consultation Généraliste", "Radio X", "Lunettes Simples").
--   `description` : Text {Nullable} - Description détaillée de la prestation.
--   `codeInterne` : String {Nullable, Unique} - Code interne ou code utilisé dans des nomenclatures externes.
--   `montantReference` : Decimal {Nullable} - Montant de référence pour cette prestation (utilisé pour les calculs de prise en charge).
--   `estActive` : Boolean {Non Nul} - Indique si cette prestation est actuellement prise en charge.
--   `categoriePrestation` : String {Nullable} - Catégorie à laquelle appartient la prestation (ex: "Consultation", "Imagerie", "Optique", "Dentaire"). (Enum ou référence si liste finie).
-
-**Méthodes Possibles :**
-
--   `creer(donneesPrestation)` : Prestation - Crée une nouvelle prestation.
--   `modifier(donnees)` : Boolean - Modifie les informations de la prestation.
--   `desactiver()` : Boolean - Change le statut "estActive" à false.
+-   `groupe_id`: Identifiant du groupe
+-   `contrat_id`: Identifiant du contrat
 
 ---
 
@@ -327,17 +366,37 @@
 
 ---
 
-**Nom de la Classe :** AidePonctuelle
+**Nom de la classe:** TypeAllocation
+**Description:** Decris des types d'allocation
+**Attributs:**
+
+-   `id`: Identifiant
+-   `libelle`: Libelle du type d'allocation
+-   `montantStandard`: Montant par default de ce type d'allocation.
+-   `montantMax`: Montant maximal appliquable pour cette allocation.
+-   `montantMin`: Montant minimal appliquable pour cette allocation.
+
+---
+
+**Nom de la classe:** GroupeAllocation
+**Description:** Associe un type d'allocation a un groupe
+
+-   `groupe_id`: Groupe id
+-   `type_allocation_id`: Le type d'allocation
+-   `montant`: Montant de l'allocation
+
+---
+
+**Nom de la Classe :** Allocation
 
 **Type :** Classe Principale
-
 **Description :** Représente une aide financière exceptionnelle accordée à un mutualiste, non liée à une prestation, un prêt ou un rachat.
-
 **Attributs :**
 
 -   `id` : UUID / Integer {Clé Primaire} - Identifiant unique de l'aide ponctuelle.
 -   `mutualisteId` : UUID / Integer {Clé Étrangère, Non Nul} - Référence au mutualiste bénéficiaire de l'aide.
--   `dateAide` : Date {Non Nul} - Date à laquelle l'aide a été accordée.
+-   `type_allocation_id`: Reference le type d'allocation.
+-   `date` : Date {Non Nul} - Date à laquelle l'aide a été accordée.
 -   `montant` : Decimal {Non Nul} - Montant de l'aide.
 -   `motif` : String {Non Nul} - Motif ou raison de l'aide.
 -   `statut` : Enum (accordée, versée, refusée, annulée) {Non Nul} - Statut de l'aide.
@@ -349,6 +408,48 @@
 -   `accorder(mutualisteId, montant, motif, adminId)` : AidePonctuelle - Crée une nouvelle aide avec statut "accordée".
 -   `marquerVersee(adminId)` : Boolean - Change le statut à "versée".
 -   `refuser(motif)` : Boolean - Change le statut à "refusée".
+
+---
+
+**Nom de la classe:** TypePrestation
+**Description**: Representation une categorie de prestation.
+
+-   `id`: Identifiant unique de la prestation
+-   `libelle`: Le libelle du type de prestation.
+
+---
+
+**Nom de classe:** IneligibilitePrestation
+**Description**: Represente l'ineligibilite d'un mutualiste pour une prestation donnee
+
+-   `id`: Identifiant unique
+-   `mutualiste_id:` Identifiant du mutualiste
+-   `type_prestation_id`: Identifiant du type de prestation
+-   `date_expiration`: Date d'expiration de l'ineligibilite
+
+---
+
+**Nom de la Classe :** Prestation
+
+**Type :** Classe Principale
+
+**Description :** Représente un type de service, soin ou acte qui peut être couvert ou proposé par la mutuelle.
+
+**Attributs :**
+
+-   `id` : Integer {Clé Primaire} - Identifiant unique de la prestation.
+-   `nom` : String {Unique, Non Nul} - Nom de la prestation (ex: "Consultation Généraliste", "Radio X", "Lunettes Simples").
+-   `description` : Text {Nullable} - Description détaillée de la prestation.
+-   `codeInterne` : String {Nullable, Unique} - Code interne ou code utilisé dans des nomenclatures externes.
+-   `montantReference` : Decimal {Nullable} - Montant de référence pour cette prestation (utilisé pour les calculs de prise en charge).
+-   `estActive` : Boolean {Non Nul} - Indique si cette prestation est actuellement prise en charge.
+-   `type_id` : String {Nullable} - Catégorie à laquelle appartient la prestation (ex: "Consultation", "Imagerie", "Optique", "Dentaire"). (Enum ou référence si liste finie).
+
+**Méthodes Possibles :**
+
+-   `creer(donneesPrestation)` : Prestation - Crée une nouvelle prestation.
+-   `modifier(donnees)` : Boolean - Modifie les informations de la prestation.
+-   `desactiver()` : Boolean - Change le statut "estActive" à false.
 
 ---
 
@@ -384,9 +485,23 @@
 -   `marquerRemboursee()` : Boolean - Change le statut à "remboursée" (souvent lié à la création d'une Liquidation).
 -   `associerJustificatif(documentId)` : Boolean - Lie un document justificatif à la demande.
 
+**Note**
+L'eligilite d'un mutualiste pour une prise en charge est calculee en prenant en compte les anciennes prestation recus
+
 ---
 
-**Nom de la Classe :** Liquidation
+**Nom de la classe**: ModaliteRemboursement
+**Description**: Represente les modalite de remboursement d'une prise en charge.
+
+-   `id`: Identifiant de la modalité de prise en charge.
+-   `type_prestation_id`: Identifiant du type de soin.
+-   `type_ayant_droit_id`: Represente le type de l'ayant droit.
+-   `taux_hopital_public`: Pourcentage de remboursement pour les frais dans un hopital public.
+-   `taux_hopital_prive`: Pourcentage de remboursement pour les frais dans un hopital prive.
+
+---
+
+**Nom de la Classe :** Remboursement
 
 **Type :** Classe Principale
 
@@ -394,18 +509,18 @@
 
 **Attributs :**
 
--   `id` : UUID / Integer {Clé Primaire} - Identifiant unique de la liquidation.
--   `priseEnChargeId` : UUID / Integer {Clé Étrangère, Non Nul} - Référence à la prise en charge qui est réglée par cette liquidation.
+-   `id` : UUID / Integer {Clé Primaire} - Identifiant unique du remboursement.
+-   `priseEnChargeId` : UUID / Integer {Clé Étrangère, Non Nul} - Référence à la prise en charge qui est réglée par ce remboursement.
 -   `datePaiement` : Date {Non Nul} - Date à laquelle le paiement a été effectué.
 -   `montantPaye` : Decimal {Non Nul} - Montant effectivement payé (doit correspondre au `montantPrisEnCharge` de la PriseEnCharge liée).
--   `modePaiement` : Enum (Virement Bancaire, Chèque, Espèces Caisse) {Non Nul} - Méthode de paiement utilisée pour la liquidation.
+-   `modePaiement` : Enum (Virement Bancaire, Chèque, Espèces Caisse) {Non Nul} - Méthode de paiement utilisée pour le remboursement.
 -   `referenceTransaction` : String {Nullable} - Référence de la transaction bancaire, numéro de chèque, référence de sortie de caisse.
 -   `payeParAdminId` : UUID / Integer {Clé Étrangère, Non Nul} - Administrateur qui a enregistré/initié le paiement.
 
 **Méthodes Possibles :**
 
--   `creer(priseEnChargeId, montant, modePaiement, reference, adminId)` : Liquidation - Enregistre une nouvelle liquidation pour une prise en charge.
--   `associerPrisesEnCharge(listePrisesEnChargeIds)` : Boolean - Permet de lier potentiellement plusieurs prises en charge à une seule liquidation (si paiements groupés). _Note : Le modèle actuel lie Liquidation à 1 PriseEnCharge. Une relation M:N avec association class LiquidationPriseEnCharge serait plus flexible pour les paiements groupés._ Restons sur 1:1 pour l'instant comme dans le concept.
+-   `creer(priseEnChargeId, montant, modePaiement, reference, adminId)` : Remboursement - Enregistre un nouveau remboursement pour une prise en charge.
+-   `associerPrisesEnCharge(listePrisesEnChargeIds)` : Boolean - Permet de lier potentiellement plusieurs prises en charge à une seule remboursement (si paiements groupés). _Note : Le modèle actuel lie Remboursement à 1 PriseEnCharge. Une relation M:N avec association class RemboursementPriseEnCharge serait plus flexible pour les paiements groupés._ Restons sur 1:1 pour l'instant comme dans le concept.
 -   `notifierMutualiste()` : Boolean - Déclenche une notification ou un message pour informer le mutualiste du paiement.
 
 ---
@@ -582,100 +697,95 @@
 
 ---
 
-**Nom de la Classe :** DépenseFonctionnement
-
-**Type :** Classe Principale
-
-**Description :** Enregistrement d'une dépense opérationnelle ou administrative de la mutuelle.
-
-**Attributs :**
-
--   `id` : UUID / Integer {Clé Primaire} - Identifiant unique de la dépense.
--   `reference` : String {Unique, Non Nul} - Référence unique (peut être générée automatiquement).
--   `dateDepense` : Date {Non Nul} - Date à laquelle la dépense a eu lieu.
--   `montant` : Decimal {Non Nul} - Montant de la dépense.
--   `beneficiaire` : String {Non Nul} - À qui la dépense a été payée.
--   `categorieDepenseId` : Integer {Clé Étrangère, Non Nul} - Référence à la catégorie de dépense.
--   `description` : Text {Nullable} - Description ou justification.
--   `modePaiement` : String {Nullable} - Comment la dépense a été payée (ex: Virement, Chèque, Espèces). (Enum ou référence si liste finie).
--   `dateEnregistrement` : DateTime {Non Nul} - Date et heure de l'enregistrement dans le système.
--   `enregistreParAdminId` : UUID / Integer {Clé Étrangère, Non Nul} - Administrateur qui a enregistré la dépense.
-
-**Méthodes Possibles :**
-
--   `enregistrer(donnees, adminId)` : DépenseFonctionnement - Crée un nouvel enregistrement.
--   `modifier(donnees)` : Boolean - Modifie les détails de la dépense (si droits suffisants).
--   `associerJustificatif(documentId)` : Boolean - Lie un document justificatif.
+-   **Nom de la Classe :** Caisse
+-   **Type :** Classe Principale
+-   **Description :** Représente une caisse physique pour la gestion de l'argent liquide.
+-   **Attributs :**
+    -   `id` : Integer {Clé Primaire, Auto-incrément}
+    -   `nom` : String {Unique, Non Nul}
+    -   `description` : String {Nullable}
+    -   `devise` : String {Non Nul}
+-   **Méthodes Possibles :**
+    -   `creer(nom, description, devise)` : Caisse
+    -   `getSoldeActuel()` : Decimal
 
 ---
 
-**Nom de la Classe :** CatégorieDépense
-
-**Type :** Classe Principale
-
-**Description :** Classification des dépenses de fonctionnement pour les rapports et l'organisation.
-
-**Attributs :**
-
--   `id` : Integer {Clé Primaire} - Identifiant unique de la catégorie.
--   `nom` : String {Unique, Non Nul} - Nom de la catégorie (ex: "Loyer", "Salaires", "Fournitures").
--   `description` : String {Nullable} - Description de la catégorie.
--   `estActive` : Boolean {Non Nul} - Indique si la catégorie est active pour les nouvelles dépenses.
-
-**Méthodes Possibles :**
-
--   `creer(nom, description)` : CatégorieDépense - Crée une nouvelle catégorie.
--   `modifier(donnees)` : Boolean - Modifie les informations de la catégorie.
--   `desactiver()` : Boolean - Marque la catégorie comme inactive.
+-   **Nom de la Classe :** CategorieEntree
+-   **Type :** Classe Principale / Entité Lookup
+-   **Description :** Classification des types de mouvements d'entrée d'argent en caisse.
+-   **Attributs :**
+    -   `id` : Integer {Clé Primaire, Auto-incrément}
+    -   `libelle` : String {Unique, Non Nul}
+    -   `description` : String {Nullable}
+    -   `estActif` : Boolean {Non Nul}
+-   **Méthodes Possibles :**
+    -   `creer(libelle, description)` : CategorieEntree
+    -   `modifier(donnees)` : Boolean
+    -   `desactiver()` : Boolean
 
 ---
 
-**Nom de la Classe :** Caisse
-
-**Type :** Classe Principale
-
-**Description :** Représente une caisse physique (lieu où l'argent liquide est géré).
-
-**Attributs :**
-
--   `id` : Integer {Clé Primaire} - Identifiant unique de la caisse.
--   `nom` : String {Unique, Non Nul} - Nom de la caisse (ex: "Caisse Siège Principal", "Petite Caisse Agence Nord").
--   `description` : String {Nullable} - Description ou localisation.
--   `devise` : String {Non Nul} - Code devise (ex: "XOF", "USD").
-    _(Le solde actuel est un calcul basé sur les MouvementsCaisse, pas un attribut stocké directement)_.
-
-**Méthodes Possibles :**
-
--   `creer(nom, description, devise)` : Caisse - Crée une nouvelle caisse physique.
--   `getSoldeActuel()` : Decimal - Calcule et retourne le solde courant.
+-   **Nom de la Classe :** CategorieSortie
+-   **Type :** Classe Principale / Entité Lookup
+-   **Description :** Classification des types de mouvements de sortie de caisse, incluant les catégories de dépense.
+-   **Attributs :**
+    -   `id` : Integer {Clé Primaire, Auto-incrément}
+    -   `libelle` : String {Unique, Non Nul}
+    -   `description` : String {Nullable}
+    -   `estActive` : Boolean {Non Nul}
+-   **Méthodes Possibles :**
+    -   `creer(libelle, description)` : CategorieSortie
+    -   `modifier(donnees)` : Boolean
+    -   `desactiver()` : Boolean
 
 ---
 
-**Nom de la Classe :** MouvementCaisse
+-   **Nom de la Classe :** Entree
+-   **Type :** Classe Principale
+-   **Description :** Enregistrement d'un mouvement d'entrée d'argent dans une caisse.
+-   **Attributs :**
 
-**Type :** Classe Principale
+    -   `id` : UUID {Clé Primaire}
+    -   `caisseId` : Integer {Clé Étrangère, Non Nul}
+    -   `categorieEntreeId` : Integer {Clé Étrangère, Non Nul}
+    -   `dateHeureMouvement` : DateTime {Non Nul}
+    -   `montant` : Decimal {Non Nul}
+    -   `sourceMotif` : String {Non Nul}
+    -   `description` : Text {Nullable}
+    -   `referenceExterne` : String {Nullable}
+    -   `paiementId` : UUID {Clé Étrangère, Nullable}
+    -   `dateEnregistrement` : DateTime {Non Nul}
+    -   `enregistreParAdminId` : UUID {Clé Étrangère, Non Nul}
 
-**Description :** Enregistre une transaction d'argent liquide (entrée ou sortie) affectant le solde d'une caisse physique.
+-   **Méthodes Possibles :**
+    -   `enregistrer(donnees, adminId, paiementIdOptionnel)` : Entree
+    -   `caisse()` : Caisse
+    -   `categorieEntree()` : CategorieEntree
+    -   `paiement()` : Paiement
 
-**Attributs :**
+---
 
--   `id` : UUID / Integer {Clé Primaire} - Identifiant unique du mouvement.
--   `caisseId` : Integer {Clé Étrangère, Non Nul} - Référence à la caisse concernée.
--   `dateHeureMouvement` : DateTime {Non Nul} - Date et heure exacte du mouvement physique de l'argent.
--   `typeMouvement` : Enum (Entrée, Sortie) {Non Nul} - Indique s'il s'agit d'une entrée ou d'une sortie.
--   `montant` : Decimal {Non Nul} - Montant du mouvement (toujours positif; le typeMouvement indique l'effet sur le solde).
--   `sourceMotif` : String {Non Nul} - Brève description de la source (entrée) ou du motif/destination (sortie).
--   `description` : Text {Nullable} - Justification ou détails supplémentaires.
--   `enregistreParAdminId` : UUID / Integer {Clé Étrangère, Non Nul} - Administrateur qui a enregistré le mouvement dans le système.
--   `dateEnregistrement` : DateTime {Non Nul} - Date et heure de l'enregistrement dans le système.
--   `depenseFonctionnementId` : UUID / Integer {Clé Étrangère, Nullable} - Référence à une dépense de fonctionnement si cette sortie de caisse la règle.
--   `paiementId` : UUID / Integer {Clé Étrangère, Nullable} - Référence à un enregistrement de Paiement si cette entrée de caisse correspond à un encaissement en espèces.
+-   **Nom de la Classe :** Sortie
+-   **Type :** Classe Principale
+-   **Description :** Enregistrement d'un mouvement de sortie d'argent d'une caisse (inclut le paiement de dépenses).
+-   **Attributs :**
 
-**Méthodes Possibles :**
+    -   `id` : UUID {Clé Primaire}
+    -   `caisseId` : Integer {Clé Étrangère, Non Nul}
+    -   `categorieSortieId` : Integer {Clé Étrangère, Non Nul}
+    -   `dateHeureMouvement` : DateTime {Non Nul}
+    -   `montant` : Decimal {Non Nul}
+    -   `beneficiaireMotif` : String {Non Nul} - À qui/quoi la sortie est destinée.
+    -   `description` : Text {Nullable}
+    -   `referenceExterne` : String {Nullable}
+    -   `dateEnregistrement` : DateTime {Non Nul}
+    -   `enregistreParAdminId` : UUID {Clé Étrangère, Non Nul}
 
--   `enregistrerEntree(caisseId, dateHeure, montant, sourceMotif, description, adminId, paiementIdOptionnel)` : MouvementCaisse - Crée un mouvement de type "Entrée".
--   `enregistrerSortie(caisseId, dateHeure, montant, sourceMotif, description, adminId, depenseIdOptionnel)` : MouvementCaisse - Crée un mouvement de type "Sortie".
--   `estEntree()` : Boolean - Vérifie si le mouvement est une entrée.
+-   **Méthodes Possibles :**
+    -   `enregistrer(donnees, adminId)` : Sortie
+    -   `caisse()` : Caisse
+    -   `categorieSortie()` : CategorieSortie
 
 ---
 

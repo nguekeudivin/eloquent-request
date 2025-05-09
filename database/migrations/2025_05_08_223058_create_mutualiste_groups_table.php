@@ -11,8 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('aides', function (Blueprint $table) {
+        Schema::create('mutualiste_groups', function (Blueprint $table) {
             $table->id();
+            $table->string('group_name');
+            $table->string('poste');
             $table->timestamps();
         });
     }
@@ -22,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('aides');
+        Schema::dropIfExists('mutualiste_groups');
     }
 };

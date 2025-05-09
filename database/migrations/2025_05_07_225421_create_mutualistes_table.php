@@ -19,8 +19,14 @@ return new class extends Migration
             $table->enum('sexe', ['H', 'F', 'Autre'])->nullable();
             $table->text('adresse')->nullable();
             $table->string('telephone', 255)->nullable();
-            $table->string('profession', 255)->nullable();
             $table->date('date_premiere_adhesion');
+            $table->foreignId('profession_id')
+            ->nullable() // Ou ->nonNullable()
+            ->after('telephone');
+
+      $table->foreignId('poste_responsabilite_id')
+            ->nullable() // Ou ->nonNullable()
+            ->after('profession_id');
 
             $table->timestamps(); // created_at et updated_at
 
