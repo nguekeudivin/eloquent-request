@@ -2,22 +2,98 @@
 
 namespace App\Services\QueryService;
 
+use Illuminate\Support\Str;
+
 class Query
 {
     protected $request;
     protected $paginate;
-    protected $models = [];
 
-    public function run($request)
+    protected function applyPermissions($requestQuery, $userPermissions): array
+    {
+        $filteredQuery = [];
+
+        foreach ($requestQuery as $modelAlias => $queryDefinition) {
+            $modelSingulier = Str::singular($modelAlias);
+
+            // Vérifier la permission d'accès général au modèle ou si des éléments spécifiques sont demandés
+            $hasModelAccess = in_array("{$modelSingulier}.*", $userPermissions) || !empty($queryDefinition);
+
+            if ($hasModelAccess) {
+                $filteredQuery[$modelAlias] = $this->filterModelQueryBasNiveau($modelSingulier, $queryDefinition, $userPermissions);
+            }
+        }
+
+        return $filteredQuery;
+    }
+
+    protected function filterModelQueryBasNiveau(string $modelSingulier, object $queryDefinition, array $userPermissions): object
+    {
+        $filteredDefinition = [];
+
+        // Filtrer la clause 'select'
+        if (isset($queryDefinition->select)) {
+            $filteredSelect = [];
+            foreach ($queryDefinition->select as $attribute) {
+                if (in_array("{$modelSingulier}.{$attribute}", $userPermissions) || in_array("{$modelSingulier}.*", $userPermissions)) {
+                    $filteredSelect[] = $attribute;
+                }
+            }
+            if (!empty($filteredSelect)) {
+                $filteredDefinition['select'] = $filteredSelect;
+            }
+        }
+
+        // Filtrer les attributs computed
+        if (isset($queryDefinition->computed)) {
+            $filteredComputed = [];
+            foreach ((array) $queryDefinition->computed as $attribute => $args) {
+                if (in_array("{$modelSingulier}.{$attribute}", $userPermissions) || in_array("{$modelSingulier}.*", $userPermissions)) {
+                    $filteredComputed[$attribute] = $args;
+                }
+            }
+            if (!empty($filteredComputed)) {
+                $filteredDefinition['computed'] = $filteredComputed;
+            }
+        }
+
+        // Filtrer les relations
+        if (isset($queryDefinition->rels)) {
+            $filteredRels = [];
+            foreach ((array) $queryDefinition->rels as $relationName => $relationQuery) {
+                if (in_array("{$modelSingulier}.{$relationName}", $userPermissions) || in_array("{$modelSingulier}.*", $userPermissions)) {
+                    $relatedModelSingulier = Str::singular($relationName);
+                    $filteredRels[$relationName] = $this->filterModelQueryBasNiveau($relatedModelSingulier, $relationQuery, $userPermissions);
+                }
+            }
+            if (!empty($filteredRels)) {
+                $filteredDefinition['rels'] = $filteredRels;
+            }
+        }
+
+        // Conserver les autres clauses
+        foreach (['clauses', 'order', 'paginate', 'limit'] as $key) {
+            if (isset($queryDefinition->$key)) {
+                $filteredDefinition[$key] = $queryDefinition->$key;
+            }
+        }
+
+        return (object) $filteredDefinition; // Cast the array to an object before returning
+    }
+
+
+    public function run($request, $userPermissions)
     {
         $this->request = $request;
 
-        $query = json_decode($request->input("query"));
+        $query = $this->applyPermissions((array)json_decode($request->input("query")), $userPermissions);
 
-        foreach ($query as $modelAlias => $value) {
-            $result[$modelAlias] = $this->runQuery(
-                $this->models[$modelAlias],
-                $value
+        $result = [];
+
+        foreach ($query as $queryKey => $modelQuery) {
+            $result[$queryKey] = $this->runQuery(
+                $this->models[Str::singular($queryKey)],
+                $modelQuery
             );
         }
         return $result;
@@ -29,6 +105,10 @@ class Query
         $model = new $modelClass();
 
         $result = $this->evaluateQuery($model, $query);
+
+        if($result == null){
+            return [];
+        }
 
         if (property_exists($query, "rels")) {
             $this->evaluateRels($result, $query->rels);
@@ -57,7 +137,9 @@ class Query
         if (property_exists($query, "select")) {
             $result = $result->select(...$query->select);
         } else {
-            $result = $result->select("*");
+            // Under user permissions control
+            //$result = $result->select("");
+            return null;
         }
 
         // Evaluates clauses

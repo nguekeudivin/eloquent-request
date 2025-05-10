@@ -2,7 +2,7 @@
 
 **Type :** Classe Abstraite / Principale
 
-**Description :** Représente une personne ayant un compte et accédant au système (peut être un Mutualiste ou un Administrateur). Contient les informations d'identification et de connexion communes.
+**Description :** Représente une personne ayant un compte et accédant au système (peut être un Mutualiste ou un admin). Contient les informations d'identification et de connexion communes.
 
 **Attributs :**
 
@@ -24,7 +24,7 @@
 
 ---
 
-**Nom de la Classe :** Administrateur
+**Nom de la Classe :** admin
 
 **Type :** Classe Principale (Hérite de Utilisateur)
 
@@ -32,30 +32,30 @@
 
 **Attributs :**
 
--   `id` : UUID / Integer {Clé Primaire, Clé Étrangère} - Identifiant unique de l'administrateur (hérité de Utilisateur).
--   `nom` : String {Non Nul} - Nom de famille de l'administrateur.
--   `prenom` : String {Non Nul} - Prénom(s) de l'administrateur.
--   `service` : String {Nullable} - Service ou département auquel appartient l'administrateur.
+-   `id` : UUID / Integer {Clé Primaire, Clé Étrangère} - Identifiant unique de l'admin (hérité de Utilisateur).
+-   `nom` : String {Non Nul} - Nom de famille de l'admin.
+-   `prenom` : String {Non Nul} - Prénom(s) de l'admin.
+-   `service` : String {Nullable} - Service ou département auquel appartient l'admin.
 
 **Méthodes Possibles :**
 
--   `creerCompteAdmin(donnees)` : Administrateur - Crée un nouveau compte administrateur.
--   `modifierCompteAdmin(adminId, donnees)` : Boolean - Modifie les informations d'un compte administrateur.
--   `assignerRole(roleId)` : Boolean - Associe un rôle à cet administrateur.
+-   `creerCompteAdmin(donnees)` : admin - Crée un nouveau compte admin.
+-   `modifierCompteAdmin(adminId, donnees)` : Boolean - Modifie les informations d'un compte admin.
+-   `assignerRole(roleId)` : Boolean - Associe un rôle à cet admin.
 -   `visualiserLogs(filtres)` : List\<LogActivité\> - Consulte les journaux d'activité.
 -   `traiterReclamation(reclamationId, actions)` : Boolean - Effectue une action sur une réclamation.
 
 ---
 
-**Nom de la Classe :** Super Administrateur
+**Nom de la Classe :** Super admin
 
-**Type :** Classe Principale (Hérite de Administrateur)
+**Type :** Classe Principale (Hérite de admin)
 
-**Description :** Représente un administrateur disposant des droits les plus élevés, capable de gérer les users, les rôles, les permissions et la configuration système.
+**Description :** Représente un admin disposant des droits les plus élevés, capable de gérer les users, les rôles, les permissions et la configuration système.
 
 **Attributs :**
 
--   `id` : UUID / Integer {Clé Primaire, Clé Étrangère} - Identifiant unique du super administrateur (hérité de Administrateur).
+-   `id` : UUID / Integer {Clé Primaire, Clé Étrangère} - Identifiant unique du super admin (hérité de admin).
     _(Souvent, cette classe n'a pas d'attributs propres, son rôle spécial est défini par les permissions associées à son compte via le système de rôles)._
 
 **Méthodes Possibles :**
@@ -64,7 +64,7 @@
 -   `gererPermissions(actions, permissionId, donnees)` : Boolean - Crée, modifie ou supprime des permissions (ou les associe aux rôles).
 -   `modifierConfigurationSysteme(parametres)` : Boolean - Met à jour les paramètres globaux du système.
 -   `lancerSauvegardeBD()` : Boolean - Déclenche une sauvegarde manuelle de la base de données.
--   `gererComptesAdmin(actions, adminId, donnees)` : Boolean - Crée, modifie, active/désactive d'autres comptes administrateurs.
+-   `gererComptesAdmin(actions, adminId, donnees)` : Boolean - Crée, modifie, active/désactive d'autres comptes admins.
 
 ---
 
@@ -281,7 +281,7 @@ _ `modifierProfession(libelle)` : Boolean \* `listerProfessions()` : List\<Profe
 -   `modePaiement` : Enum (Espèces, Virement Bancaire, Mobile Money, Chèque, Carte Bancaire) {Non Nul} - Méthode utilisée pour le paiement.
 -   `referenceTransactionExterne` : String {Nullable} - Numéro de transaction, référence bancaire, numéro de chèque, etc.
 -   `statut` : Enum (validé, en attente, annulé, échoué) {Non Nul} - Statut du traitement du paiement dans le système.
--   `enregistreParUtilisateurId` : UUID / Integer {Clé Étrangère, Non Nul} - Qui a enregistré ce paiement (Mutualiste si paiement en ligne, Administrateur si paiement manuel).
+-   `enregistreParUtilisateurId` : UUID / Integer {Clé Étrangère, Non Nul} - Qui a enregistré ce paiement (Mutualiste si paiement en ligne, admin si paiement manuel).
 
 **Méthodes Possibles :**
 
@@ -328,7 +328,7 @@ _ `modifierProfession(libelle)` : Boolean \* `listerProfessions()` : List\<Profe
 -   `dateProchaineEcheance` : Date {Nullable} - Date de la prochaine échéance de remboursement.
 -   `statut` : Enum (en cours, soldé, en retard, annulé, en litige) {Non Nul} - Statut actuel du prêt.
 -   `objectif` : String {Nullable} - Motif ou objectif du prêt (ex: "Frais de scolarité", "Projet divers").
--   `accordeParAdminId` : UUID / Integer {Clé Étrangère, Non Nul} - Administrateur qui a accordé le prêt.
+-   `accordeParAdminId` : UUID / Integer {Clé Étrangère, Non Nul} - admin qui a accordé le prêt.
 
 **Méthodes Possibles :**
 
@@ -356,7 +356,7 @@ _ `modifierProfession(libelle)` : Boolean \* `listerProfessions()` : List\<Profe
 -   `montantRestantDu` : Decimal {Calculé, Non Nul} - Montant restant dû à la mutuelle sur ce rachat.
 -   `dateProchaineEcheance` : Date {Nullable} - Date de la prochaine échéance de remboursement à la mutuelle.
 -   `statut` : Enum (en cours, soldé, en litige, clôturé) {Non Nul} - Statut actuel du dossier de rachat dans le système de la mutuelle.
--   `enregistreParAdminId` : UUID / Integer {Clé Étrangère, Non Nul} - Administrateur qui a enregistré le rachat.
+-   `enregistreParAdminId` : UUID / Integer {Clé Étrangère, Non Nul} - admin qui a enregistré le rachat.
 
 **Méthodes Possibles :**
 
@@ -400,8 +400,8 @@ _ `modifierProfession(libelle)` : Boolean \* `listerProfessions()` : List\<Profe
 -   `montant` : Decimal {Non Nul} - Montant de l'aide.
 -   `motif` : String {Non Nul} - Motif ou raison de l'aide.
 -   `statut` : Enum (accordée, versée, refusée, annulée) {Non Nul} - Statut de l'aide.
--   `verifieeParAdminId` : UUID / Integer {Clé Étrangère, Non Nul} - Administrateur qui a validé l'aide.
--   `verseeParAdminId` : UUID / Integer {Clé Étrangère, Nullable} - Administrateur qui a enregistré le versement (si différent).
+-   `verifieeParAdminId` : UUID / Integer {Clé Étrangère, Non Nul} - admin qui a validé l'aide.
+-   `verseeParAdminId` : UUID / Integer {Clé Étrangère, Nullable} - admin qui a enregistré le versement (si différent).
 
 **Méthodes Possibles :**
 
@@ -474,8 +474,8 @@ _ `modifierProfession(libelle)` : Boolean \* `listerProfessions()` : List\<Profe
 -   `dateMiseAJourStatut` : DateTime {Non Nul} - Date et heure du dernier changement de statut.
 -   `statut` : Enum (soumise, en cours, validée, remboursée, refusée, annulée) {Non Nul} - Statut actuel de la demande.
 -   `description` : Text {Nullable} - Description ou motif de la demande.
--   `soumiseParUtilisateurId` : UUID / Integer {Clé Étrangère, Non Nul} - Qui a soumis la demande (Mutualiste si via espace personnel, Administrateur si enregistrée par Admin).
--   `valideeParAdminId` : UUID / Integer {Clé Étrangère, Nullable} - Administrateur qui a validé ou refusé la demande.
+-   `soumiseParUtilisateurId` : UUID / Integer {Clé Étrangère, Non Nul} - Qui a soumis la demande (Mutualiste si via espace personnel, admin si enregistrée par Admin).
+-   `valideeParAdminId` : UUID / Integer {Clé Étrangère, Nullable} - admin qui a validé ou refusé la demande.
 
 **Méthodes Possibles :**
 
@@ -515,7 +515,7 @@ L'eligilite d'un mutualiste pour une prise en charge est calculee en prenant en 
 -   `montantPaye` : Decimal {Non Nul} - Montant effectivement payé (doit correspondre au `montantPrisEnCharge` de la PriseEnCharge liée).
 -   `modePaiement` : Enum (Virement Bancaire, Chèque, Espèces Caisse) {Non Nul} - Méthode de paiement utilisée pour le remboursement.
 -   `referenceTransaction` : String {Nullable} - Référence de la transaction bancaire, numéro de chèque, référence de sortie de caisse.
--   `payeParAdminId` : UUID / Integer {Clé Étrangère, Non Nul} - Administrateur qui a enregistré/initié le paiement.
+-   `payeParAdminId` : UUID / Integer {Clé Étrangère, Non Nul} - admin qui a enregistré/initié le paiement.
 
 **Méthodes Possibles :**
 
@@ -567,8 +567,8 @@ L'eligilite d'un mutualiste pour une prise en charge est calculee en prenant en 
 -   `etatInitial` : Text {Nullable} - Description ou photo de l'état du matériel au moment du prêt.
 -   `etatRetour` : Text {Nullable} - Description ou photo de l'état du matériel au retour.
 -   `statut` : Enum (en cours, retourné, en retard, perdu, endommagé) {Non Nul} - Statut du prêt de matériel.
--   `enregistreParAdminId` : UUID / Integer {Clé Étrangère, Non Nul} - Administrateur qui a enregistré le prêt.
--   `retourEnregistreParAdminId` : UUID / Integer {Clé Étrangère, Nullable} - Administrateur qui a enregistré le retour.
+-   `enregistreParAdminId` : UUID / Integer {Clé Étrangère, Non Nul} - admin qui a enregistré le prêt.
+-   `retourEnregistreParAdminId` : UUID / Integer {Clé Étrangère, Nullable} - admin qui a enregistré le retour.
 
 **Méthodes Possibles :**
 
@@ -595,13 +595,13 @@ L'eligilite d'un mutualiste pour une prise en charge est calculee en prenant en 
 -   `description` : Text {Non Nul} - Contenu détaillé de la réclamation.
 -   `statut` : Enum (soumise, en cours, résolue, fermée, escaladée) {Non Nul} - Statut actuel de la réclamation.
 -   `dateMiseAJourStatut` : DateTime {Non Nul} - Date et heure du dernier changement de statut.
--   `soumiseParUtilisateurId` : UUID / Integer {Clé Étrangère, Non Nul} - Qui a soumis la réclamation (Mutualiste ou Administrateur).
--   `assigneeAAdminId` : UUID / Integer {Clé Étrangère, Nullable} - Administrateur actuellement responsable du traitement de la réclamation.
+-   `soumiseParUtilisateurId` : UUID / Integer {Clé Étrangère, Non Nul} - Qui a soumis la réclamation (Mutualiste ou admin).
+-   `assigneeAAdminId` : UUID / Integer {Clé Étrangère, Nullable} - admin actuellement responsable du traitement de la réclamation.
 
 **Méthodes Possibles :**
 
 -   `soumettre(mutualisteId, sujet, description, utilisateurId)` : Réclamation - Crée une nouvelle réclamation avec statut "soumise".
--   `assignerA(adminId)` : Boolean - Associe un administrateur à la réclamation.
+-   `assignerA(adminId)` : Boolean - Associe un admin à la réclamation.
 -   `changerStatut(nouveauStatut)` : Boolean - Met à jour le statut de la réclamation.
 -   `ajouterCommentaire(utilisateurId, commentaire)` : CommentaireReclamation - Ajoute une note ou un commentaire interne/public.
 -   `cloturer(resolution)` : Boolean - Change le statut à "fermée" et enregistre la résolution.
@@ -793,7 +793,7 @@ L'eligilite d'un mutualiste pour une prise en charge est calculee en prenant en 
 
 **Type :** Classe Principale
 
-**Description :** Définit un groupe de permissions pour les administrateurs.
+**Description :** Définit un groupe de permissions pour les admins.
 
 **Attributs :**
 
@@ -829,21 +829,21 @@ L'eligilite d'un mutualiste pour une prise en charge est calculee en prenant en 
 
 ---
 
-**Nom de la Classe :** AdministrateurRole
+**Nom de la Classe :** adminRole
 
 **Type :** Classe d'Association
 
-**Description :** Lie un Administrateur à un Rôle, indiquant qu'un administrateur possède un certain rôle à partir d'une date donnée. (Nécessaire pour la relation N:N entre Administrateur et Rôle).
+**Description :** Lie un admin à un Rôle, indiquant qu'un admin possède un certain rôle à partir d'une date donnée. (Nécessaire pour la relation N:N entre admin et Rôle).
 
 **Attributs :**
 
--   `administrateurId` : UUID / Integer {Clé Primaire, Clé Étrangère, Non Nul} - Référence à l'administrateur.
+-   `adminId` : UUID / Integer {Clé Primaire, Clé Étrangère, Non Nul} - Référence à l'admin.
 -   `roleId` : Integer {Clé Primaire, Clé Étrangère, Non Nul} - Référence au rôle.
--   `dateAttribution` : DateTime {Non Nul} - Date et heure à laquelle ce rôle a été attribué à cet administrateur.
+-   `dateAttribution` : DateTime {Non Nul} - Date et heure à laquelle ce rôle a été attribué à cet admin.
 
 **Méthodes Possibles :**
 
--   `attribuer(adminId, roleId)` : AdministrateurRole - Crée un lien d'attribution de rôle.
+-   `attribuer(adminId, roleId)` : adminRole - Crée un lien d'attribution de rôle.
 -   `retirer(adminId, roleId)` : Boolean - Supprime le lien d'attribution.
 
 ---
@@ -905,7 +905,7 @@ L'eligilite d'un mutualiste pour une prise en charge est calculee en prenant en 
 -   `typeRapport` : Enum (Parametrable, Statique, Dynamique) {Non Nul} - Comment le rapport est généré/stocké.
 -   `configurationGeneration` : Text {Nullable} - Configuration technique pour générer le rapport (requête SQL, paramètres, référence à un modèle). (Peut être JSON ou format structuré).
 -   `cheminFichierStatique` : String {Nullable} - Chemin vers un fichier si c'est un rapport statique (ex: PDF pré-généré manuellement).
--   `estActif` : Boolean {Non Nul} - Indique si ce rapport est visible et utilisable par les administrateurs.
+-   `estActif` : Boolean {Non Nul} - Indique si ce rapport est visible et utilisable par les admins.
 
 **Méthodes Possibles :**
 

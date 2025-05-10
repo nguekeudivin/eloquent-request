@@ -40,9 +40,9 @@ class User extends Authenticatable
         return $this->belongsTo(TypeStatut::class, 'statut_id');
     }
 
-    public function administrateur()
+    public function admin()
     {
-        return $this->hasOne(Administrateur::class, 'id'); // Lier users.id à administrateurs.id
+        return $this->hasOne(Admin::class, 'id'); // Lier users.id à admins.id
     }
 
     public function mutualiste()

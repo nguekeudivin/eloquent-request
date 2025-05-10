@@ -4,25 +4,25 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Permission extends Model
+class Admin extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory;
 
-    protected $table = 'permissions';
+    protected $table = 'admins';
     protected $primaryKey = 'id';
     protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
-        'code',
-        'description',
+        'id',
+        'nom',
+        'prenom',
+        'service',
     ];
 
      protected $guarded = [
-        'id',
         'created_at',
         'updated_at',
         'created_by_user_id',
@@ -33,6 +33,11 @@ class Permission extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'id');
+    }
 
     public function createdBy(): BelongsTo
     {

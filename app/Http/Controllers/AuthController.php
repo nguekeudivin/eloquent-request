@@ -31,17 +31,16 @@ class AuthController extends Controller
         }
 
         // Authentification réussie (validation manuelle passée)
-        $user->load('administrateur', 'mutualiste');
+        $user->load('admin', 'mutualiste');
 
         // Déterminer le type d'utilisateur
         $userType = null; // Type par défaut
 
-        if ($user->administrateur !== null) {
-            $userType = 'administrateur';
+        if ($user->admin !== null) {
+            $userType = 'admin';
         } elseif ($user->mutualiste !== null) {
             $userType = 'mutualiste';
         }
-
         // Générer un nouveau token Sanctum pour cet utilisateur
         $token = $user->createToken('api-token')->plainTextToken;
 
@@ -66,13 +65,13 @@ class AuthController extends Controller
     {
         $user = $request->user(); // Récupère l'utilisateur authentifié
 
-        // Charger les relations administrateur et mutualiste
-        $user->load('administrateur', 'mutualiste');
+        // Charger les relations admin et mutualiste
+        $user->load('admin', 'mutualiste');
 
         $userType = null;
 
-        if ($user->administrateur !== null) {
-            $userType = 'administrateur';
+        if ($user->admin !== null) {
+            $userType = 'admin';
         } elseif ($user->mutualiste !== null) {
             $userType = 'mutualiste';
         }

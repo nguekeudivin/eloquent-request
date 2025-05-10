@@ -8,20 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('mutualistes', function (Blueprint $table) {
-            $table->string('id', 36)->primary(); // Clé primaire UUID (définie comme string)
+        Schema::create('admins', function (Blueprint $table) {
+            $table->string('id', 36)->primary();
 
-            $table->string('numero_adherent', 255)->unique();
             $table->string('nom', 255);
             $table->string('prenom', 255);
-            $table->date('date_naissance');
-            $table->string('lieu_naissance', 255)->nullable();
-            $table->enum('sexe', ['H', 'F', 'Autre'])->nullable();
-            $table->text('adresse')->nullable();
-            $table->string('telephone', 255)->nullable();
-            $table->date('date_premiere_adhesion');
-            $table->string('profession');
-            $table->timestamps(); // created_at et updated_at
+            $table->string('service', 255)->nullable();
+
+            $table->timestamps();
 
             $table->string('created_by_user_id', 36)->nullable();
             $table->string('updated_by_user_id', 36)->nullable();
@@ -34,6 +28,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('mutualistes');
+        Schema::dropIfExists('admins');
     }
 };

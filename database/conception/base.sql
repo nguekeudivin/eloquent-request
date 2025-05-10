@@ -36,9 +36,9 @@ DROP TABLE IF EXISTS paiements;
 DROP TABLE IF EXISTS adhesions;
 DROP TABLE IF EXISTS contrats;
 DROP TABLE IF EXISTS ayant_droits;
-DROP TABLE IF EXISTS super_administrateurs;
-DROP TABLE IF EXISTS administrateurs;
-DROP TABLE IF EXISTS administrateur_role;
+DROP TABLE IF EXISTS super_admins;
+DROP TABLE IF EXISTS admins;
+DROP TABLE IF EXISTS admin_role;
 DROP TABLE IF EXISTS role_permission;
 DROP TABLE IF EXISTS permissions;
 DROP TABLE IF EXISTS roles;
@@ -89,9 +89,9 @@ CREATE TABLE users (
 
 
 -- -------------------------------------------------------------
--- Table administrateurs
+-- Table admins
 -- -------------------------------------------------------------
-CREATE TABLE administrateurs (
+CREATE TABLE admins (
     id VARCHAR(36) PRIMARY KEY,
     nom VARCHAR(255) NOT NULL,
     prenom VARCHAR(255) NOT NULL,
@@ -106,19 +106,6 @@ CREATE TABLE administrateurs (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- -------------------------------------------------------------
--- Table super_administrateurs
--- -------------------------------------------------------------
-CREATE TABLE super_administrateurs (
-    id VARCHAR(36) PRIMARY KEY,
-    created_at DATETIME NULL,
-    updated_at DATETIME NULL,
-    created_by_user_id VARCHAR(36) NULL,
-    updated_by_user_id VARCHAR(36) NULL,
-    FOREIGN KEY (id) REFERENCES administrateurs(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 -- -------------------------------------------------------------
@@ -169,74 +156,6 @@ CREATE TABLE ayant_droits (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- -------------------------------------------------------------
--- Table roles
--- -------------------------------------------------------------
-CREATE TABLE roles (
-    id VARCHAR(36) PRIMARY KEY,
-    nom VARCHAR(255) NOT NULL UNIQUE,
-    description VARCHAR(255) NULL,
-    created_at DATETIME NULL,
-    updated_at DATETIME NULL,
-    created_by_user_id VARCHAR(36) NULL,
-    updated_by_user_id VARCHAR(36) NULL,
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
--- -------------------------------------------------------------
--- Table permissions
--- -------------------------------------------------------------
-CREATE TABLE permissions (
-    id VARCHAR(36) PRIMARY KEY,
-    code_unique VARCHAR(255) NOT NULL UNIQUE,
-    description VARCHAR(255) NOT NULL,
-    created_at DATETIME NULL,
-    updated_at DATETIME NULL,
-    created_by_user_id VARCHAR(36) NULL,
-    updated_by_user_id VARCHAR(36) NULL,
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
--- -------------------------------------------------------------
--- Table administrateur_role
--- -------------------------------------------------------------
-CREATE TABLE administrateur_role (
-    administrateur_id VARCHAR(36) NOT NULL,
-    role_id VARCHAR(36) NOT NULL,
-    date_attribution DATETIME NOT NULL, -- Keep this specific date
-    created_at DATETIME NULL, -- Standard audit timestamp
-    updated_at DATETIME NULL, -- Standard audit timestamp
-    created_by_user_id VARCHAR(36) NULL,
-    updated_by_user_id VARCHAR(36) NULL,
-    PRIMARY KEY (administrateur_id, role_id),
-    FOREIGN KEY (administrateur_id) REFERENCES administrateurs(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
--- -------------------------------------------------------------
--- Table role_permission
--- -------------------------------------------------------------
-CREATE TABLE role_permission (
-    role_id VARCHAR(36) NOT NULL,
-    permission_id VARCHAR(36) NOT NULL,
-    date_attribution DATETIME NOT NULL, -- Keep this specific date
-    created_at DATETIME NULL, -- Standard audit timestamp
-    updated_at DATETIME NULL, -- Standard audit timestamp
-    created_by_user_id VARCHAR(36) NULL,
-    updated_by_user_id VARCHAR(36) NULL,
-    PRIMARY KEY (role_id, permission_id),
-    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 -- -------------------------------------------------------------
@@ -366,8 +285,8 @@ CREATE TABLE aides (
     updated_by_user_id VARCHAR(36) NULL,
     FOREIGN KEY (mutualiste_id) REFERENCES mutualistes(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (statut_id) REFERENCES type_statuts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (verifiee_par_admin_id) REFERENCES administrateurs(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (versee_par_admin_id) REFERENCES administrateurs(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (verifiee_par_admin_id) REFERENCES admins(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (versee_par_admin_id) REFERENCES admins(id) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -422,7 +341,7 @@ CREATE TABLE prise_en_charges (
     FOREIGN KEY (adhesion_id) REFERENCES adhesions(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (statut_id) REFERENCES type_statuts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (soumise_par_utilisateur_id) REFERENCES users(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (validee_par_admin_id) REFERENCES administrateurs(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (validee_par_admin_id) REFERENCES admins(id) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -444,7 +363,7 @@ CREATE TABLE liquidations (
     created_by_user_id VARCHAR(36) NULL,
     updated_by_user_id VARCHAR(36) NULL,
     FOREIGN KEY (prise_en_charge_id) REFERENCES prise_en_charges(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (paye_par_admin_id) REFERENCES administrateurs(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (paye_par_admin_id) REFERENCES admins(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -494,8 +413,8 @@ CREATE TABLE pret_materiels (
     FOREIGN KEY (materiel_id) REFERENCES materiels(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (mutualiste_id) REFERENCES mutualistes(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (statut_id) REFERENCES type_statuts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (enregistre_par_admin_id) REFERENCES administrateurs(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (retour_enregistre_par_admin_id) REFERENCES administrateurs(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (enregistre_par_admin_id) REFERENCES admins(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (retour_enregistre_par_admin_id) REFERENCES admins(id) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -522,7 +441,7 @@ CREATE TABLE reclamations (
     FOREIGN KEY (mutualiste_id) REFERENCES mutualistes(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (statut_id) REFERENCES type_statuts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (soumise_par_utilisateur_id) REFERENCES users(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (assignee_a_admin_id) REFERENCES administrateurs(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (assignee_a_admin_id) REFERENCES admins(id) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -646,7 +565,7 @@ CREATE TABLE depense_fonctionnements (
     created_by_user_id VARCHAR(36) NULL, -- Will likely be same as enregistre_par_admin_id, but kept for consistency
     updated_by_user_id VARCHAR(36) NULL,
     FOREIGN KEY (categorie_depense_id) REFERENCES categorie_depenses(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (enregistre_par_admin_id) REFERENCES administrateurs(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (enregistre_par_admin_id) REFERENCES admins(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -688,7 +607,7 @@ CREATE TABLE mouvements_caisse (
     created_by_user_id VARCHAR(36) NULL,
     updated_by_user_id VARCHAR(36) NULL,
     FOREIGN KEY (caisse_id) REFERENCES caisses(id) ON DELETE RESTRICT ON UPDATE CASCADE, -- Référence maintenant VARCHAR(36)
-    FOREIGN KEY (enregistre_par_admin_id) REFERENCES administrateurs(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (enregistre_par_admin_id) REFERENCES admins(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (depense_fonctionnement_id) REFERENCES depenses_fonctionnement(id) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (paiement_id) REFERENCES paiements(id) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,

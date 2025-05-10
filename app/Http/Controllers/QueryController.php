@@ -12,7 +12,12 @@ class QueryController extends Controller
     public function index(Request $request)
     {
 
-        return response()->json((new MainQuery)->run($request));
+        $userPermissions = [
+            "user.*",
+            "user.username"
+        ];
+
+        return response()->json((new MainQuery)->run($request, $userPermissions));
 
     }
 }

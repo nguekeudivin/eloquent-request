@@ -2,27 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Permission extends Model
+class AdminRole extends Pivot
 {
-    use HasFactory, HasUuids;
-
-    protected $table = 'permissions';
-    protected $primaryKey = 'id';
-    protected $keyType = 'string';
-    public $incrementing = false;
+    protected $table = 'admin_role';
 
     protected $fillable = [
-        'code',
-        'description',
+        'date_attribution',
     ];
 
-     protected $guarded = [
-        'id',
+    protected $guarded = [
+        'admin_id',
+        'role_id',
         'created_at',
         'updated_at',
         'created_by_user_id',
@@ -30,9 +23,20 @@ class Permission extends Model
     ];
 
     protected $casts = [
+        'date_attribution' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function admin(): BelongsTo // Nom de la relation (et du modèle) changé ici
+    {
+        return $this->belongsTo(Admin::class, 'admin_id'); // Référence au modèle Admin
+    }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
 
     public function createdBy(): BelongsTo
     {
