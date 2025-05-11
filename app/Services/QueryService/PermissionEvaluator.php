@@ -6,6 +6,13 @@ use Illuminate\Support\Str;
 
 class PermissionEvaluator
 {
+
+    protected $models = [];
+
+    public function setModels($models){
+        $this->models = $models;
+    }
+
     public function hasModelAccess(string $modelSingulier, object $queryDefinition, array $userPermissions): bool
     {
         return in_array("{$modelSingulier}.*", $userPermissions) || !empty((array) $queryDefinition);
@@ -24,6 +31,19 @@ class PermissionEvaluator
 
         foreach ($modelFilters as $filterName => $filterFunction) {
             $filterPermission = "{$modelSingulier}:list:{$filterName}";
+            if (in_array($filterPermission, $userPermissions)) {
+                $appliedFilters[] = $filterName; // Stock the filter name
+            }
+        }
+        return $appliedFilters;
+    }
+
+    public function getApplicableRelationFilters(string $permissionRoot, array $userPermissions, string $relatedModelClass){
+        $appliedFilters = [];
+        $modelFilters = $relatedModelClass::queryFilters() ?? [];
+
+        foreach ($modelFilters as $filterName => $filterFunction) {
+            $filterPermission = "{$permissionRoot}.{$filterName}";
             if (in_array($filterPermission, $userPermissions)) {
                 $appliedFilters[] = $filterName; // Stock the filter name
             }
@@ -64,12 +84,35 @@ class PermissionEvaluator
         // Filtrer les relations
         if (isset($queryDefinition->rels)) {
             $filteredRels = [];
-            foreach ((array) $queryDefinition->rels as $relationName => $relationQuery) {
+            foreach ( $queryDefinition->rels as $relationName => $relationQuery) {
+
+                // User as total access token user relation data.
                 if (in_array("{$modelSingulier}.{$relationName}", $userPermissions) || in_array("{$modelSingulier}.*", $userPermissions)) {
                     $relatedModelSingulier = Str::singular($relationName);
-                    $filteredRels[$relationName] = $this->filterModelQueryBasNiveau($relatedModelSingulier, $relationQuery, $userPermissions);
+
+                    $filtered = $this->filterModelQueryBasNiveau($relatedModelSingulier, (object)$relationQuery, $userPermissions);
+                    if(isset($filtered->select)){
+                        $filteredRels[$relationName] = $filtered;
+                    }
+                }
+                else{
+                    // If not check if partial access is allow under some conditions.
+                    $relatedModelSingulier = Str::singular($relationName);
+                    $relatedModelClass = $this->models[$relatedModelSingulier];
+
+                    $appliedFilters = $this->getApplicableRelationFilters("{$modelSingulier}.{$relationName}", $userPermissions, $relatedModelClass);
+
+                    if(!empty($appliedFilters)){
+
+                        $filtered = $this->filterModelQueryBasNiveau($relatedModelSingulier, (object)$relationQuery, $userPermissions);
+                        if(isset($filtered->select)){
+                            $filteredRels[$relationName] = $filtered;
+                            $filteredRels[$relationName]->appliedRelationFilters = $appliedFilters;
+                        }
+                    }
                 }
             }
+
             if (!empty($filteredRels)) {
                 $filteredDefinition['rels'] = $filteredRels;
             }

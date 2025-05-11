@@ -37,6 +37,7 @@ class Query
         $requestQuery = (array) json_decode($request->input("query"), true);
         $finalResult = [];
 
+        $this->permissionEvaluator->setModels($this->models);
 
         if (!is_array($requestQuery)) {
             return []; // Ou lancer une exception
@@ -56,6 +57,7 @@ class Query
 
                 $filteredDefinition = $this->permissionEvaluator->filterModelQueryBasNiveau($modelSingulier, (object) $queryDefinition, $userPermissions);
 
+
                 if (!$this->permissionEvaluator->canListModel($modelSingulier, $userPermissions)) {
 
                     $appliedFilters = $this->permissionEvaluator->getApplicableListFilters($modelSingulier, $userPermissions, $modelClass);
@@ -66,6 +68,7 @@ class Query
                         continue; // L'utilisateur n'a pas la permission de lister ni de filtrer
                     }
                 }
+
 
                 // Il n'ya pas de select donc aucune information a recupere.
                 // Generelement ce scenario se produit quand l'utilisateur n'a pas les permission sur les attributs.

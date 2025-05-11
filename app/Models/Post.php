@@ -8,6 +8,19 @@ use Illuminate\Database\Eloquent\Builder;
 class Post extends Model
 {
 
+    protected $fillable = [
+        "title",
+        "slug",
+        "body",
+        "is_publised"
+    ];
+
+    // post:list
+
+    // post:list:owner
+    // post:list:public
+    // post:list:published
+
 
     public static function queryFilters(): array
     {
@@ -20,9 +33,7 @@ class Post extends Model
             'published' => function (Builder $query, $user) {
                 $query->where('is_published', false);
             },
-            'latest' => function (Builder $query, $user) {
-                $query->orderBy('created_at', 'desc')->limit(5);
-            },
+
         ];
     }
 }

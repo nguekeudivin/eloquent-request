@@ -23,17 +23,12 @@ class QueryController extends Controller
     {
 
         $userPermissions = [
-            //'post:list',
-            'post.id',
+            'user:list',
+            'user.email',
+            'user.id',
+            'user.posts',
+            'user.posts.published',
             'post.title',
-            'post:list:published',
-            //'post.*',
-            //'user:list',
-            //'user.*',
-            //'user:list:verified',
-            //'user:list:recent',
-            'user.name',
-            'user.email'
         ];
 
         $this->queryService->setModels([

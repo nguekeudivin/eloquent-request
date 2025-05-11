@@ -1,5 +1,23 @@
-{
-    "users": {
-        "select": ["*"]
+[
+    {
+        "users": {
+            "select": ["name", "email"],
+            "rels": {
+                "posts": {
+                    "select": ["*"]
+                }
+            }
+        }
+    },
+
+    {
+        "users": {
+            "select": ["id", "email"],
+            "rels": {
+                "posts": {
+                    "select": ["title", "slug"]
+                }
+            }
+        }
     }
-}
+]
