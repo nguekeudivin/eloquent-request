@@ -8,24 +8,31 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('permissions', function (Blueprint $table) {
-            $table->string('id', 36)->primary();
+        Schema::create('admin_roles', function (Blueprint $table) {
+            $table->string('admin_id', 36);
+            $table->string('role_id', 36);
+            $table->primary(['admin_id', 'role_id']);
 
-            $table->string('code', 255)->unique();
-            $table->string('description', 255);
+            $table->dateTime('date_attribution');
 
             $table->timestamps();
 
             $table->string('created_by_user_id', 36)->nullable();
             $table->string('updated_by_user_id', 36)->nullable();
 
+            $table->foreign('admin_id')->references('id')->on('admins')->onDelete('CASCADE')->onUpdate('CASCADE');
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('RESTRICT')->onUpdate('CASCADE');
             $table->foreign('created_by_user_id')->references('id')->on('users')->onDelete('SET NULL')->onUpdate('CASCADE');
             $table->foreign('updated_by_user_id')->references('id')->on('users')->onDelete('SET NULL')->onUpdate('CASCADE');
+
+            $table->index('role_id');
+            $table->index('created_by_user_id');
+            $table->index('updated_by_user_id');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('permissions');
+        Schema::dropIfExists('admin_roles');
     }
 };

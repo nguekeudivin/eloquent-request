@@ -2,328 +2,84 @@
 
 namespace App\Services\QueryService;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class Query
 {
     protected $request;
-    protected $paginate;
+    protected $permissionEvaluator;
+    protected $eloquentQueryBuilder;
+    protected $queryRunner;
+    protected $models = [
+        "user" => \App\Models\User::class,
+    ];
 
-    protected function applyPermissions($requestQuery, $userPermissions): array
-    {
-        $filteredQuery = [];
-
-        foreach ($requestQuery as $modelAlias => $queryDefinition) {
-            $modelSingulier = Str::singular($modelAlias);
-
-            // Vérifier la permission d'accès général au modèle ou si des éléments spécifiques sont demandés
-            $hasModelAccess = in_array("{$modelSingulier}.*", $userPermissions) || !empty($queryDefinition);
-
-            if ($hasModelAccess) {
-                $filteredQuery[$modelAlias] = $this->filterModelQueryBasNiveau($modelSingulier, $queryDefinition, $userPermissions);
-            }
-        }
-
-        return $filteredQuery;
+    public function __construct(
+        PermissionEvaluator $permissionEvaluator,
+        EloquentQueryBuilder $eloquentQueryBuilder,
+        QueryRunner $queryRunner,
+        Request $request
+    ) {
+        $this->permissionEvaluator = $permissionEvaluator;
+        $this->eloquentQueryBuilder = $eloquentQueryBuilder;
+        $this->queryRunner = $queryRunner;
+        $this->request = $request;
     }
 
-    protected function filterModelQueryBasNiveau(string $modelSingulier, object $queryDefinition, array $userPermissions): object
-    {
-        $filteredDefinition = [];
-
-        // Filtrer la clause 'select'
-        if (isset($queryDefinition->select)) {
-            $filteredSelect = [];
-            foreach ($queryDefinition->select as $attribute) {
-                if (in_array("{$modelSingulier}.{$attribute}", $userPermissions) || in_array("{$modelSingulier}.*", $userPermissions)) {
-                    $filteredSelect[] = $attribute;
-                }
-            }
-            if (!empty($filteredSelect)) {
-                $filteredDefinition['select'] = $filteredSelect;
-            }
-        }
-
-        // Filtrer les attributs computed
-        if (isset($queryDefinition->computed)) {
-            $filteredComputed = [];
-            foreach ((array) $queryDefinition->computed as $attribute => $args) {
-                if (in_array("{$modelSingulier}.{$attribute}", $userPermissions) || in_array("{$modelSingulier}.*", $userPermissions)) {
-                    $filteredComputed[$attribute] = $args;
-                }
-            }
-            if (!empty($filteredComputed)) {
-                $filteredDefinition['computed'] = $filteredComputed;
-            }
-        }
-
-        // Filtrer les relations
-        if (isset($queryDefinition->rels)) {
-            $filteredRels = [];
-            foreach ((array) $queryDefinition->rels as $relationName => $relationQuery) {
-                if (in_array("{$modelSingulier}.{$relationName}", $userPermissions) || in_array("{$modelSingulier}.*", $userPermissions)) {
-                    $relatedModelSingulier = Str::singular($relationName);
-                    $filteredRels[$relationName] = $this->filterModelQueryBasNiveau($relatedModelSingulier, $relationQuery, $userPermissions);
-                }
-            }
-            if (!empty($filteredRels)) {
-                $filteredDefinition['rels'] = $filteredRels;
-            }
-        }
-
-        // Conserver les autres clauses
-        foreach (['clauses', 'order', 'paginate', 'limit'] as $key) {
-            if (isset($queryDefinition->$key)) {
-                $filteredDefinition[$key] = $queryDefinition->$key;
-            }
-        }
-
-        return (object) $filteredDefinition; // Cast the array to an object before returning
+    public function setModels($models){
+        $this->models = $models;
     }
-
 
     public function run($request, $userPermissions)
     {
         $this->request = $request;
+        $requestQuery = (array) json_decode($request->input("query"), true);
+        $finalResult = [];
 
-        $query = $this->applyPermissions((array)json_decode($request->input("query")), $userPermissions);
 
-        $result = [];
-
-        foreach ($query as $queryKey => $modelQuery) {
-            $result[$queryKey] = $this->runQuery(
-                $this->models[Str::singular($queryKey)],
-                $modelQuery
-            );
-        }
-        return $result;
-    }
-
-    public function runQuery($modelClass, $query)
-    {
-        // Evaluate select.
-        $model = new $modelClass();
-
-        $result = $this->evaluateQuery($model, $query);
-
-        if($result == null){
-            return [];
+        if (!is_array($requestQuery)) {
+            return []; // Ou lancer une exception
         }
 
-        if (property_exists($query, "rels")) {
-            $this->evaluateRels($result, $query->rels);
-        }
 
-        if (property_exists($query, "computed")) {
-            $this->evaluateComputed($result, $query->computed);
-        }
+        foreach ($requestQuery as $modelAlias => $queryDefinition) {
+            $modelSingulier = Str::singular($modelAlias);
 
-        if (
-            property_exists($query, "paginate") &&
-            !property_exists($query, "limit")
-        ) {
-            // work on pagination here.
-            return array_merge($this->paginate->toArray(), [
-                "data" => $result,
-            ]);
-        } else {
-            return $result;
-        }
-    }
+            $modelClass = $this->models[$modelSingulier] ?? null;
 
-    public function evaluateQuery($result, $query)
-    {
-        // Evaluate select
-        if (property_exists($query, "select")) {
-            $result = $result->select(...$query->select);
-        } else {
-            // Under user permissions control
-            //$result = $result->select("");
-            return null;
-        }
-
-        // Evaluates clauses
-        // clauses = [
-        //     { name: "where", value: ["attribute", "operator", "value"] },
-        //     { name: "where", value: [{ name: "Where", value:[] }, { name: "orWhere", value:[] } }, // with subquery
-        // ];
-        if (property_exists($query, "clauses")) {
-            foreach ($query->clauses as $clause) {
-                // $clause->name is string
-                // $value->value is a array
-                $this->evaluateClause($result, $clause->name, $clause->value);
+            if (!$modelClass) {
+                continue; // Ou lancer une exception
             }
-        }
 
-        //Evaluate order.
-        // order: [
-        //     [attributeName, asc],
-        //     [attributeName, desc]
-        // ]
-        if (property_exists($query, "order")) {
-            foreach ($query->order as $item) {
-                $result = $result->orderBy(...$item);
-            }
-        }
+            if ($this->permissionEvaluator->hasModelAccess($modelSingulier, (object) $queryDefinition, $userPermissions)) {
 
-        // Evaluate pagination and limit.
-        // Here we sould return the result.
-        if (property_exists($query, "limit")) {
-            if ((int) $query->limit == 1) {
-                return $result->first();
-            } else {
-                return $result->limit($query->limit)->get();
-            }
-        }
+                $filteredDefinition = $this->permissionEvaluator->filterModelQueryBasNiveau($modelSingulier, (object) $queryDefinition, $userPermissions);
 
-        // Evaluate pagination.
-        // We shouldn't have paginate and limit
-        // And error will occurs otherwise.
-        if (property_exists($query, "paginate")) {
-            $this->request->query->set("page", $query->paginate[0]);
-            $this->paginate = $result->paginate($query->paginate[1]);
-            return $this->paginate->getCollection();
-        }
+                if (!$this->permissionEvaluator->canListModel($modelSingulier, $userPermissions)) {
 
-        // We have no result we get the result.
-        return $result->get();
-    }
+                    $appliedFilters = $this->permissionEvaluator->getApplicableListFilters($modelSingulier, $userPermissions, $modelClass);
 
-
-    /**
-     * Recursively evaluates query clauses, applying them to the query builder.
-     *
-     * @param \Illuminate\Database\Query\Builder $result    The query builder instance.
-     * @param string                            $clauseName The clause method name (e.g., 'where', 'orWhere').
-     * @param array                             $value      The clause arguments. If $value[0] is an object, it contains sub-clauses.
-     */
-    function evaluateClause($result, $clauseName, $value)
-    {
-        // Check if $value[0] is an object, indicating that $value contains nested sub-clauses.
-        if (is_object($value[0])) {
-            // Recursively apply each sub-clause within the provided closure.
-            $result = $result->$clauseName(function ($q) use ($value) {
-                foreach ($value as $clause) {
-                    // Recursively evaluate each sub-clause.
-                    $this->evaluateClause($q, $clause->name, $clause->value);
-                }
-            });
-        } else {
-            // Apply the clause with its arguments directly to the query builder.
-            $result = $result->$clauseName(...$value);
-        }
-    }
-
-    function load($model, $key, $value)
-    {
-        // A relation without sub relations.
-        if (is_string($value)) {
-            $model->$key;
-        }
-
-        // A relation with sub relations.
-        if (is_object($value)) {
-            $this->loadRecursif($model, $key, $value);
-        }
-    }
-
-    function evaluateRels($model, $rels)
-    {
-        if ($this->objectIsModel($model)) {
-            // relation props
-            foreach ($rels as $key => $value) {
-                $this->load($model, $key, $value);
-            }
-            // computed props.
-        }
-
-        if ($this->objectIsCollection($model)) {
-            $model->map(function ($element) use ($rels) {
-                foreach ($rels as $key => $value) {
-                    $this->load($element, $key, $value);
-                }
-                return $element;
-            });
-        }
-    }
-
-    function evaluateComputed($model, $computed)
-    {
-        // Evaluate only if the vue is and array.
-        if ($this->objectIsModel($model)) {
-            foreach ($computed as $name => $value) {
-                if (is_array($value)) {
-                    $model->$name = $model->$name(...$value);
-                }
-            }
-        }
-
-        if ($this->objectIsCollection($model)) {
-            $model->map(function ($element) use ($computed) {
-                foreach ($computed as $name => $value) {
-                    if (is_array($value)) {
-                        $element->$name = $element->$name(...$value);
+                    if (!empty($appliedFilters)) {
+                        $filteredDefinition->appliedListFilters = $appliedFilters;
+                    } else {
+                        continue; // L'utilisateur n'a pas la permission de lister ni de filtrer
                     }
                 }
-            });
-        }
-    }
 
-    function loadRecursif($model, $rel, $subQuery)
-    {
-        // If the prop correspond to a relation that return is a model
-        // we juste check select and props.
-        if ($this->objectIsModel($model->$rel)) {
-            // Select is always apply.
-            if (property_exists($subQuery, "select")) {
-                // $model->
-                $this->applySelect($model->$rel, $subQuery->select);
+                // Il n'ya pas de select donc aucune information a recupere.
+                // Generelement ce scenario se produit quand l'utilisateur n'a pas les permission sur les attributs.
+                if(!isset($filteredDefinition->select)){
+                    continue;
+                }
+
+
+                $eloquentQuery = $this->eloquentQueryBuilder->build($modelClass, (object) $filteredDefinition);
+
+                $finalResult[$modelAlias] = $this->queryRunner->run($eloquentQuery, (object) $filteredDefinition);
             }
         }
 
-        // If the result is a collection. we can evaluate also clauses
-        if ($this->objectIsCollection($model->$rel)) {
-            if (!$model->$rel->isEmpty()) {
-                $model->setRelation(
-                    $rel,
-                    $this->evaluateQuery($model->$rel->toQuery(), $subQuery)
-                );
-            }
-        }
-
-        // Evaluate props of the current loading node.
-        if (property_exists($subQuery, "rels")) {
-            $this->evaluateRels($model->$rel, $subQuery->rels);
-        }
-
-        if (property_exists($subQuery, "computed")) {
-            $this->evaluateComputed($model->$rel, $subQuery->computed);
-        }
-    }
-
-    function objectIsModel($object)
-    {
-        if($object == null)
-            return false;
-        return in_array("Models", explode("\\", get_class($object)));
-    }
-
-    function objectIsCollection($object)
-    {
-        if($object == null)
-            return false;
-
-        return in_array("Collection", explode("\\", get_class($object)));
-    }
-
-    function applySelect($model, $select)
-    {
-        $remove = [];
-        foreach (array_keys($model->attributesToArray()) as $attr) {
-            if (!in_array($attr, $select)) {
-                $remove[] = $attr;
-            }
-        }
-        $model->makeHidden($remove);
+        return $finalResult;
     }
 }

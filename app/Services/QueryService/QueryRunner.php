@@ -1,0 +1,66 @@
+<?php
+
+namespace App\Services\QueryService;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+use App\Models\User;
+
+class QueryRunner
+{
+    protected $request;
+
+    public function __construct(Request $request)
+    {
+        $this->request = $request;
+    }
+
+    public function run(Builder $eloquentQuery, object $queryDefinition): mixed
+    {
+
+        $user = User::find(1); // Definir le user.
+
+        // Appliquer les filtres de requête si présents
+        if (isset($queryDefinition->appliedListFilters) && is_array($queryDefinition->appliedListFilters)) {
+            $modelClass = $eloquentQuery->getModel()::class;
+            // Appeler la méthode statique pour obtenir le tableau des filtres
+            $modelFilters = $modelClass::queryFilters() ?? [];
+
+            $eloquentQuery->where(function (Builder $query) use ($queryDefinition, $modelFilters, $user) {
+                $first = true;
+                foreach ($queryDefinition->appliedListFilters as $filterName) {
+                    if (isset($modelFilters[$filterName]) && is_callable($modelFilters[$filterName])) {
+                        if (!$first) {
+                            $query->orWhere(function (Builder $q) use ($modelFilters, $filterName) {
+                                $modelFilters[$filterName]($q, $user);
+                            });
+                        } else {
+                            $modelFilters[$filterName]($query, $user);
+                            $first = false;
+                        }
+                    }
+                }
+            });
+        }
+
+
+        // Gérer la pagination
+        if (property_exists($queryDefinition, "paginate") && !property_exists($queryDefinition, "limit")) {
+            $page = $queryDefinition->paginate[0] ?? null;
+            $perPage = $queryDefinition->paginate[1];
+            return $eloquentQuery->paginate($perPage, ['*'], 'page', $page)->toArray();
+        }
+
+        // Gérer la limite
+        if (property_exists($queryDefinition, "limit")) {
+            if ((int) $queryDefinition->limit == 1) {
+                return $eloquentQuery->first();
+            } else {
+                return $eloquentQuery->limit($queryDefinition->limit)->get();
+            }
+        }
+
+        // Retourner tous les résultats si ni la pagination ni la limite ne sont spécifiées
+        return $eloquentQuery->get();
+    }
+}

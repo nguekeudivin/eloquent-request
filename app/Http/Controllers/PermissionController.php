@@ -19,10 +19,9 @@ class PermissionController extends Controller
         // la manière exacte de récupérer les permissions dépend de votre système d'authentification/autorisation)
         $userPermissions = [
             "user:create",
-            "user:create:email",
-            "user:create:password",
-            "user:create:name",
-            "profile:create"
+            "user:create:*",
+            "profile:create",
+            "profile:create:*"
         ];
 
         // Définir les règles de validation basées sur les permissions

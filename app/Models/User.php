@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Builder;
 
 class User extends Authenticatable
 {
@@ -34,6 +35,8 @@ class User extends Authenticatable
         'updated_at' => 'datetime',
     ];
 
+
+
     // Relations inchangées
     public function statut()
     {
@@ -49,4 +52,18 @@ class User extends Authenticatable
     {
         return $this->hasOne(Mutualiste::class, 'id'); // Lier users.id à mutualistes.id
     }
+
+    public static function queryFilters(): array
+    {
+        return [
+            'verified' => function (Builder $query, $user) {
+                $query->whereNotNull('email_verified_at');
+            },
+            'recent' => function (Builder $query, $user) {
+                $query->where('created_at', '>=', now()->subMonth());
+            },
+        ];
+    }
+
+
 }

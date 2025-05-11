@@ -33,14 +33,18 @@ trait PermissionValidator
                 continue; // Si la permission racine manque, on ne vérifie pas les champs en dessous
             }
 
-            // Vérifier les permissions spécifiques pour chaque champ
-            foreach ($validationRules as $field => $rulesArray) {
-                $permissionAttribute = $permissionRoot . ':' . $field;
-                if (!in_array($permissionAttribute, $userPermissions)) {
-                    $modelName = Str::before($permissionRoot, ':');
-                    $errors[$field] = ["Vous n'avez pas la permission d'attribuer la valeur au champ '{$field}' lors de la création/modification du modèle '{$modelName}'."];
+            // Verifier s'il y'a une permission totale sur les champs
+            if(!in_array($permissionRoot.':*', $userPermissions)){
+                // Vérifier les permissions spécifiques pour chaque champ
+                foreach ($validationRules as $field => $rulesArray) {
+                    $permissionAttribute = $permissionRoot . ':' . $field;
+                    if (!in_array($permissionAttribute, $userPermissions)) {
+                        $modelName = Str::before($permissionRoot, ':');
+                        $errors[$field] = ["Vous n'avez pas la permission d'attribuer la valeur au champ '{$field}' lors de la création/modification du modèle '{$modelName}'."];
+                    }
                 }
             }
+
 
             // Si toutes les permissions pour ce bloc sont présentes, valider les données
             if (!isset($errors['permission']) && !array_intersect_key(array_flip(array_keys($validationRules)), $errors)) {

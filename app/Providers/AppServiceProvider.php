@@ -12,6 +12,17 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         //
+        $this->app->singleton(PermissionEvaluator::class, function ($app) {
+            return new PermissionEvaluator();
+        });
+
+        $this->app->singleton(EloquentQueryBuilder::class, function ($app) {
+            return new EloquentQueryBuilder();
+        });
+
+        $this->app->singleton(QueryRunner::class, function ($app) {
+            return new QueryRunner($app->make(Request::class));
+        });
     }
 
     /**
