@@ -1,12 +1,7 @@
 [
     {
         "users": {
-            "select": ["name", "email"],
-            "rels": {
-                "posts": {
-                    "select": ["*"]
-                }
-            }
+            "select": ["*"]
         }
     },
 

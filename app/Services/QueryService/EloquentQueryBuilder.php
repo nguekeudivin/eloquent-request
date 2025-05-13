@@ -8,6 +8,12 @@ use App\Models\User;
 
 class EloquentQueryBuilder
 {
+    protected $user = null;
+
+    public function setUser($user){
+        $this->user = $user;
+    }
+
     /**
      * Construit une requête Eloquent à partir de la définition de la requête.
      */
@@ -78,7 +84,7 @@ class EloquentQueryBuilder
     {
         $with = [];
 
-        $user = User::find(1);
+        $user = $this->user;
 
         foreach ((array) $rels as $relationName => $definition) {
 

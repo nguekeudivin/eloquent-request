@@ -9,10 +9,14 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Collection;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasUuids;
+
+    public $incrementing = false;
 
     protected $fillable = [
         'username',
@@ -21,57 +25,6 @@ class User extends Authenticatable
         'statut_id',
         'last_connexion',
     ];
-
-    // LECTURE
-
-    // user:list
-
-    // post:list:owner
-    // post:list:public
-    // post:list:published
-
-    // user.*
-    // user.username
-    // user.email
-    // user.password
-    // user.statut_id
-    // user.last_connexion
-
-    // user.posts
-    // post.*
-    // post.title
-    // post.slug
-    // post.body
-
-    // user->posts->author->[name, email]
-
-    // user.posts - user.*
-    // post.author - post.*
-    // author.name  - author.*
-    // author.email
-    // author.*
-
-    // user.posts.authorized
-    // user.posts.public
-
-    // CREATE/UPDATE/DELETE
-
-    // user:create - autorise a create une instance
-    // user:create:username
-    // user:create:password
-    // ...
-    // user:create:*
-
-    // user:update
-    // user:update:username
-    // user:update:password
-
-    // user:delete
-
-    // PERMISSION CUSTOM
-
-    // can_read_log
-    // user:operation:dasdasd
 
     protected $hidden = [
         'password',
@@ -86,7 +39,14 @@ class User extends Authenticatable
         'updated_at' => 'datetime',
     ];
 
-
+    public static function queryFilters(): array
+    {
+        return [
+            'self' => function (Builder $query, $user) {
+                $query->where('id', $user->id);
+            },
+        ];
+    }
 
     // Relations inchangées
     public function statut()
@@ -104,21 +64,31 @@ class User extends Authenticatable
         return $this->hasOne(Mutualiste::class, 'id'); // Lier users.id à mutualistes.id
     }
 
-    public static function queryFilters(): array
-    {
-        return [
-            'verified' => function (Builder $query, $user) {
-                $query->whereNotNull('email_verified_at');
-            },
-            'recent' => function (Builder $query, $user) {
-                $query->where('created_at', '>=', now()->subMonth());
-            },
-        ];
-    }
 
     public function posts(){
         return $this->hasMany(Post::class);
     }
 
+    // Define the relationship to roles via the user_role pivot table
+    public function roles(): BelongsToMany
+    {
+        // role_id is integer, user_id is string (UUID)
+        return $this->belongsToMany(Role::class, 'user_role', 'user_id', 'role_id')
+            ->using(UserRole::class)
+            ->withPivot('created_by_user_id', 'updated_by_user_id')
+            ->withTimestamps();
+    }
+
+     // Method to get all permissions through roles
+     public function getPermissions()
+     {
+         // Load roles and their permissions if not already loaded to avoid N+1 issues
+         if (! $this->relationLoaded('roles') || $this->roles->isEmpty() || ! $this->roles->every(fn($role) => $role->relationLoaded('permissions'))) {
+              $this->load('roles.permissions');
+         }
+
+         // Pluck permissions from all roles, flatten the collection of collections, and get unique permissions
+         return $this->roles->pluck('permissions')->flatten()->unique('id')->pluck('name')->toArray(); // Use unique('id') to compare by permission ID
+     }
 
 }

@@ -10,15 +10,21 @@ class QueryRunner
 {
     protected $request;
 
+    protected $user = null;
+
     public function __construct(Request $request)
     {
         $this->request = $request;
     }
 
+    public function setUser($user){
+        $this->user = $user;
+    }
+
     public function run(Builder $eloquentQuery, object $queryDefinition): mixed
     {
 
-        $user = User::find(1); // Definir le user.
+        $user = $this->user; // Definir le user.
 
         // Appliquer les filtres de requête si présents
         if (isset($queryDefinition->appliedListFilters) && is_array($queryDefinition->appliedListFilters)) {

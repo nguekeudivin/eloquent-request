@@ -4,20 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany; // Import BelongsToMany
+use App\Models\UserRole; // Import UserRole pivot model
+use App\Models\RolePermission; // Import RolePermission pivot model
 
 class Role extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory;
 
     protected $table = 'roles';
     protected $primaryKey = 'id';
-    protected $keyType = 'string';
-    public $incrementing = false;
+    protected $keyType = 'int'; // Key type is integer
+    public $incrementing = true; // ID is auto-incrementing
 
     protected $fillable = [
-        'nom',
+        'name', // Column name is now 'name'
+        'code',
         'description',
     ];
 
@@ -42,5 +45,23 @@ class Role extends Model
     public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by_user_id');
+    }
+
+    // Relation to users via user_role pivot table
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_role', 'role_id', 'user_id')
+                    ->using(UserRole::class) // Use the pivot model
+                    ->withPivot('created_by_user_id', 'updated_by_user_id') // Load additional columns
+                    ->withTimestamps(); // Manage created_at and updated_at on pivot
+    }
+
+    // Relation to permissions via role_permission pivot table
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(Permission::class, 'role_permission', 'role_id', 'permission_id')
+                    ->using(RolePermission::class) // Use the pivot model
+                    ->withPivot('created_by_user_id', 'updated_by_user_id') // Load additional columns
+                    ->withTimestamps(); // Manage created_at and updated_at on pivot
     }
 }

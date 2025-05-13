@@ -3,12 +3,16 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\User;
-use App\Models\Mutualiste;
-use App\Models\TypeStatut;
+
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Carbon;
 use Faker\Factory as Faker; // Importer Faker
+
+use App\Models\User;
+use App\Models\Mutualiste;
+use App\Models\TypeStatut;
+use App\Models\UserRole;
+use App\Models\Role;
 
 class MutualisteSeeder extends Seeder
 {
@@ -37,6 +41,12 @@ class MutualisteSeeder extends Seeder
              ];
 
              $user = User::firstOrCreate(['email' => $userData['email']], $userData);
+
+            // Create a role
+            UserRole::create([
+                'user_id' => $user->id,
+                'role_id' => Role::where('name','mutualiste')->first()->id
+            ]);
 
              // Créer l'enregistrement mutualiste avec le même ID que l'utilisateur
              Mutualiste::firstOrCreate(

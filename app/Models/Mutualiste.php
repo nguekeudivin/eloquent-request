@@ -43,6 +43,15 @@ class Mutualiste extends Model
         'updated_at' => 'datetime',
     ];
 
+    public static function queryFilters(): array
+    {
+        return [
+            'self' => function (Builder $query, $user) {
+                $query->where('id', $user->id);
+            },
+        ];
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'id');
@@ -57,4 +66,6 @@ class Mutualiste extends Model
     {
         return $this->belongsTo(User::class, 'updated_by_user_id');
     }
+
+
 }

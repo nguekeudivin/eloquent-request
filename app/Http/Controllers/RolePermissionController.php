@@ -2,92 +2,95 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\RolePermission;
 use App\Models\Role;
 use App\Models\Permission;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Carbon;
+use App\Traits\PermissionValidator;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class RolePermissionController extends Controller
 {
-    // Attacher une permission à un rôle
-    // POST /api/roles/{roleId}/permissions
-    public function attachPermission(Request $request, string $roleId)
+    use PermissionValidator;
+
+    public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'permission_id' => 'required|string|size:36|exists:permissions,id',
-            'date_attribution' => 'nullable|date',
+        $validated = $this->validateWithPermissions($request, [
+            'role_permission:create' => [
+                'role_id' => ['required', 'integer', 'exists:roles,id'],
+                'permission_id' => ['required', 'integer', 'exists:permissions,id'],
+            ],
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        $data = $validated;
+
+        if (RolePermission::where('role_id', $data['role_id'])
+                          ->where('permission_id', $data['permission_id'])
+                          ->exists()) {
+            return response()->json(['message' => 'Ce lien rôle-permission existe déjà.'], 409);
         }
 
-        $role = Role::find($roleId);
-
-        if (!$role) {
-            return response()->json(['message' => 'Rôle non trouvé.'], 404);
-        }
-
-        $permissionId = $validator->validated()['permission_id'];
-        $dateAttribution = $validator->validated()['date_attribution'] ?? Carbon::now();
-
-        $pivotData = [
-            'date_attribution' => $dateAttribution,
-        ];
+        $rolePermission = new RolePermission();
+        $rolePermission->fill($data);
 
         if (Auth::check()) {
-            $pivotData['created_by_user_id'] = Auth::id();
+             $rolePermission->created_by_user_id = Auth::id();
         }
 
-         if ($role->permissions()->where('permission_id', $permissionId)->exists()) {
-             return response()->json(['message' => 'Cette permission est déjà attribuée à ce rôle.'], 409);
-         }
+        $rolePermission->save();
 
-
-        $role->permissions()->attach($permissionId, $pivotData);
-
-        return response()->json(['message' => 'Permission attribuée avec succès au rôle.'], 200);
+        return response()->json(['message' => 'Lien rôle-permission créé avec succès.', 'data' => $rolePermission], 201);
     }
 
-    // Détacher une permission d'un rôle
-    // DELETE /api/roles/{roleId}/permissions/{permissionId}
-    public function detachPermission(string $roleId, string $permissionId)
+
+    public function update(Request $request, string $roleId, string $permissionId)
     {
-        $role = Role::find($roleId);
+        $roleIdInt = (int) $roleId;
+        $permissionIdInt = (int) $permissionId;
 
-        if (!$role) {
-            return response()->json(['message' => 'Rôle non trouvé.'], 404);
+        try {
+             $rolePermission = RolePermission::where('role_id', $roleIdInt)
+                                            ->where('permission_id', $permissionIdInt)
+                                            ->firstOrFail();
+        } catch (ModelNotFoundException $e) {
+             return response()->json(['message' => 'Lien rôle-permission non trouvé.'], 404);
         }
 
-        $permission = Permission::find($permissionId);
+        $validated = $this->validateWithPermissions($request, [
+            'role_permission:update' => [
+                 // Define updatable fields here if any (e.g., custom_field)
+            ],
+        ]);
 
-        if (!$permission) {
-             return response()->json(['message' => 'Permission non trouvée.'], 404);
-        }
+        $rolePermission->fill($validated);
 
-        $detached = $role->permissions()->detach($permissionId);
-
-        if ($detached) {
-            return response()->json(['message' => 'Permission retirée avec succès du rôle.'], 200);
-        } else {
-             return response()->json(['message' => 'Cette attribution de permission n\'existe pas pour ce rôle.'], 404);
-        }
-    }
-
-    // Lister les permissions d'un rôle
-    // GET /api/roles/{roleId}/permissions
-     public function listPermissions(string $roleId)
-     {
-         $role = Role::find($roleId);
-
-         if (!$role) {
-             return response()->json(['message' => 'Rôle non trouvé.'], 404);
+         if (Auth::check()) {
+            $rolePermission->updated_by_user_id = Auth::id();
          }
 
-         $permissions = $role->permissions()->withPivot('date_attribution', 'created_at', 'updated_at', 'created_by_user_id', 'updated_by_user_id')->get();
+        $rolePermission->save();
 
-         return response()->json(['role_id' => $roleId, 'permissions' => $permissions], 200);
-     }
+        return response()->json(['message' => 'Lien rôle-permission mis à jour avec succès.', 'data' => $rolePermission], 200);
+    }
+
+    public function destroy(string $roleId, string $permissionId)
+    {
+        $roleIdInt = (int) $roleId;
+        $permissionIdInt = (int) $permissionId;
+
+        try {
+             $rolePermission = RolePermission::where('role_id', $roleIdInt)
+                                            ->where('permission_id', $permissionIdInt)
+                                            ->firstOrFail();
+
+            $rolePermission->delete();
+             return response()->json(['message' => 'Lien rôle-permission supprimé avec succès.'], 200);
+
+        } catch (ModelNotFoundException $e) {
+             return response()->json(['message' => 'Lien rôle-permission non trouvé.'], 404);
+        } catch (\Exception $e) {
+             return response()->json(['message' => 'Erreur lors de la suppression du lien rôle-permission.', 'error' => $e->getMessage()], 500);
+        }
+    }
 }

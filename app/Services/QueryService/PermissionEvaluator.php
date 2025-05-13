@@ -43,7 +43,7 @@ class PermissionEvaluator
         $modelFilters = $relatedModelClass::queryFilters() ?? [];
 
         foreach ($modelFilters as $filterName => $filterFunction) {
-            $filterPermission = "{$permissionRoot}.{$filterName}";
+            $filterPermission = "{$permissionRoot}:{$filterName}";
             if (in_array($filterPermission, $userPermissions)) {
                 $appliedFilters[] = $filterName; // Stock the filter name
             }
@@ -59,7 +59,7 @@ class PermissionEvaluator
         if (isset($queryDefinition->select)) {
             $filteredSelect = [];
             foreach ($queryDefinition->select as $attribute) {
-                if (in_array("{$modelSingulier}.{$attribute}", $userPermissions) || in_array("{$modelSingulier}.*", $userPermissions)) {
+                if (in_array("{$modelSingulier}:view:{$attribute}", $userPermissions) || in_array("{$modelSingulier}:view:*", $userPermissions)) {
                     $filteredSelect[] = $attribute;
                 }
             }
@@ -72,7 +72,7 @@ class PermissionEvaluator
         if (isset($queryDefinition->computed)) {
             $filteredComputed = [];
             foreach ((array) $queryDefinition->computed as $attribute => $args) {
-                if (in_array("{$modelSingulier}.{$attribute}", $userPermissions) || in_array("{$modelSingulier}.*", $userPermissions)) {
+                if (in_array("{$modelSingulier}:view:{$attribute}", $userPermissions) || in_array("{$modelSingulier}:view:*", $userPermissions)) {
                     $filteredComputed[$attribute] = $args;
                 }
             }
@@ -87,7 +87,7 @@ class PermissionEvaluator
             foreach ( $queryDefinition->rels as $relationName => $relationQuery) {
 
                 // User as total access token user relation data.
-                if (in_array("{$modelSingulier}.{$relationName}", $userPermissions) || in_array("{$modelSingulier}.*", $userPermissions)) {
+                if (in_array("{$modelSingulier}:view:{$relationName}", $userPermissions) || in_array("{$modelSingulier}:view:*", $userPermissions)) {
                     $relatedModelSingulier = Str::singular($relationName);
 
                     $filtered = $this->filterModelQueryBasNiveau($relatedModelSingulier, (object)$relationQuery, $userPermissions);
@@ -100,7 +100,7 @@ class PermissionEvaluator
                     $relatedModelSingulier = Str::singular($relationName);
                     $relatedModelClass = $this->models[$relatedModelSingulier];
 
-                    $appliedFilters = $this->getApplicableRelationFilters("{$modelSingulier}.{$relationName}", $userPermissions, $relatedModelClass);
+                    $appliedFilters = $this->getApplicableRelationFilters("{$modelSingulier}:view:{$relationName}", $userPermissions, $relatedModelClass);
 
                     if(!empty($appliedFilters)){
 

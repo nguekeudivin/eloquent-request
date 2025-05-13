@@ -12,7 +12,7 @@ return new class extends Migration
             $table->string('id', 36)->primary();
 
             $table->string('nom', 255);
-            $table->string('prenom', 255);
+            $table->string('prenom', 255)->nullable();
             $table->string('service', 255)->nullable();
 
             $table->timestamps();

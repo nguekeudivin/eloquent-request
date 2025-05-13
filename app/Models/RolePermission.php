@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RolePermission extends Pivot
 {
-    protected $table = 'role_permissions';
+    protected $table = 'role_permission';
 
     protected $fillable = [
-        'date_attribution',
+        // Removed 'date_attribution'
+        'created_by_user_id',
+        'updated_by_user_id',
     ];
 
     protected $guarded = [
@@ -18,12 +20,12 @@ class RolePermission extends Pivot
         'permission_id',
         'created_at',
         'updated_at',
-        'created_by_user_id',
-        'updated_by_user_id',
     ];
 
     protected $casts = [
-        'date_attribution' => 'datetime',
+        // Removed 'date_attribution'
+        'role_id' => 'int', // Cast to integer
+        'permission_id' => 'int', // Cast to integer
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

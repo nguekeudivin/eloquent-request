@@ -5,32 +5,34 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class AdminRole extends Pivot
+class UserRole extends Pivot
 {
-    protected $table = 'admin_role';
+    protected $table = 'user_role';
 
     protected $fillable = [
-        'date_attribution',
-    ];
-
-    protected $guarded = [
-        'admin_id',
-        'role_id',
-        'created_at',
-        'updated_at',
+        // Removed 'date_attribution'
         'created_by_user_id',
         'updated_by_user_id',
     ];
 
+    protected $guarded = [
+        'user_id',
+        'role_id',
+        'created_at',
+        'updated_at',
+    ];
+
     protected $casts = [
-        'date_attribution' => 'datetime',
+        // Removed 'date_attribution'
+        'user_id' => 'string', // Remains string (UUID)
+        'role_id' => 'int', // Cast to integer
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
-    public function admin(): BelongsTo // Nom de la relation (et du modèle) changé ici
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Admin::class, 'admin_id'); // Référence au modèle Admin
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function role(): BelongsTo

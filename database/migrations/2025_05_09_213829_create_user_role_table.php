@@ -8,24 +8,24 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('role_permissions', function (Blueprint $table) {
-            $table->string('role_id', 36);
-            $table->string('permission_id', 36);
-            $table->primary(['role_id', 'permission_id']);
+        Schema::create('user_role', function (Blueprint $table) {
+            $table->string('user_id', 36);
+            $table->unsignedBigInteger('role_id');
 
-            $table->dateTime('date_attribution');
+            $table->primary(['user_id', 'role_id']);
 
             $table->timestamps();
 
             $table->string('created_by_user_id', 36)->nullable();
             $table->string('updated_by_user_id', 36)->nullable();
 
-            $table->foreign('role_id')->references('id')->on('roles')->onDelete('CASCADE')->onUpdate('CASCADE');
-            $table->foreign('permission_id')->references('id')->on('permissions')->onDelete('RESTRICT')->onUpdate('CASCADE');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('CASCADE')->onUpdate('CASCADE');
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('RESTRICT')->onUpdate('CASCADE');
+
             $table->foreign('created_by_user_id')->references('id')->on('users')->onDelete('SET NULL')->onUpdate('CASCADE');
             $table->foreign('updated_by_user_id')->references('id')->on('users')->onDelete('SET NULL')->onUpdate('CASCADE');
 
-            $table->index('permission_id');
+            $table->index('role_id');
             $table->index('created_by_user_id');
             $table->index('updated_by_user_id');
         });
@@ -33,6 +33,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('role_permissions');
+        Schema::dropIfExists('user_role');
     }
 };

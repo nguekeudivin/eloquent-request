@@ -31,18 +31,28 @@ class Query
         $this->models = $models;
     }
 
-    public function run($request, $userPermissions)
+    public function run($user)
     {
-        $this->request = $request;
-        $requestQuery = (array) json_decode($request->input("query"), true);
+        // check user
+        if($user == null){
+            return [];
+        }
+
+        // Set the use permissions
+        $userPermissions = $user->getPermissions();
+
+        // Parse the query
+        $requestQuery = (array) json_decode($this->request->input("query"), true);
         $finalResult = [];
 
+        // Define need informations
         $this->permissionEvaluator->setModels($this->models);
+        $this->eloquentQueryBuilder->setUser($user);
+        $this->queryRunner->setUser($user);
 
         if (!is_array($requestQuery)) {
             return []; // Ou lancer une exception
         }
-
 
         foreach ($requestQuery as $modelAlias => $queryDefinition) {
             $modelSingulier = Str::singular($modelAlias);
@@ -57,7 +67,6 @@ class Query
 
                 $filteredDefinition = $this->permissionEvaluator->filterModelQueryBasNiveau($modelSingulier, (object) $queryDefinition, $userPermissions);
 
-
                 if (!$this->permissionEvaluator->canListModel($modelSingulier, $userPermissions)) {
 
                     $appliedFilters = $this->permissionEvaluator->getApplicableListFilters($modelSingulier, $userPermissions, $modelClass);
@@ -69,13 +78,11 @@ class Query
                     }
                 }
 
-
                 // Il n'ya pas de select donc aucune information a recupere.
                 // Generelement ce scenario se produit quand l'utilisateur n'a pas les permission sur les attributs.
                 if(!isset($filteredDefinition->select)){
                     continue;
                 }
-
 
                 $eloquentQuery = $this->eloquentQueryBuilder->build($modelClass, (object) $filteredDefinition);
 

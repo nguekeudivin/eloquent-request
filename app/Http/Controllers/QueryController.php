@@ -22,21 +22,17 @@ class QueryController extends Controller
     public function index(Request $request)
     {
 
-        $userPermissions = [
-            'user:list',
-            'user.email',
-            'user.id',
-            'user.posts',
-            'user.posts.published',
-            'post.title',
-        ];
+        $user = $request->user();
+        if($user == null){
+            return response()->json(['message' => 'Unauthorize'], 422);
+        }
 
+        // Register models.
         $this->queryService->setModels([
             "user" => \App\Models\User::class,
             "post" => \App\Models\Post::class
         ]);
 
-        return response()->json($this->queryService->run($request, $userPermissions));
-
+        return response()->json($this->queryService->run($user));
     }
 }

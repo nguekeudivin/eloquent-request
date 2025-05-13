@@ -9,19 +9,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('permissions', function (Blueprint $table) {
-            $table->string('id', 36)->primary();
+            $table->id();
 
-            $table->string('code', 255)->unique();
+            $table->string('name', 255)->unique();
             $table->string('resource', 255)->nullable();
             $table->string('description', 255);
 
             $table->timestamps();
-
-            $table->string('created_by_user_id', 36)->nullable();
-            $table->string('updated_by_user_id', 36)->nullable();
-
-            $table->foreign('created_by_user_id')->references('id')->on('users')->onDelete('SET NULL')->onUpdate('CASCADE');
-            $table->foreign('updated_by_user_id')->references('id')->on('users')->onDelete('SET NULL')->onUpdate('CASCADE');
         });
     }
 
