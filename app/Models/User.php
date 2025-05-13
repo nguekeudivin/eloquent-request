@@ -91,4 +91,8 @@ class User extends Authenticatable
          return $this->roles->pluck('permissions')->flatten()->unique('id')->pluck('name')->toArray(); // Use unique('id') to compare by permission ID
      }
 
+    public function hasPermission(string $permissionName){
+      return in_array($permissionName, $this->getPermissions());
+    }
+
 }

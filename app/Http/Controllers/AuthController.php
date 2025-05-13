@@ -44,6 +44,8 @@ class AuthController extends Controller
         // Générer un nouveau token Sanctum pour cet utilisateur
         $token = $user->createToken('api-token')->plainTextToken;
 
+        $user->permissions = $user->getPermissions();
+
         // Retourner les détails de l'utilisateur et le token
         return response()->json([
             'message' => 'Connexion réussie',
@@ -64,6 +66,8 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         $user = $request->user(); // Récupère l'utilisateur authentifié
+
+        $user->permissions = $user->getPermissions();
 
         // Charger les relations admin et mutualiste
         $user->load('admin', 'mutualiste');

@@ -8,8 +8,12 @@ use Illuminate\Support\Str;
 
 trait PermissionValidator
 {
-    protected function validateWithPermissions(Request $request, array $rules, array $userPermissions)
+
+    protected function validateWithPermissions(Request $request, array $rules)
     {
+
+        $userPermissions = $request->user()->getPermissions();
+
         $errors = [];
         $validatedData = [];
 

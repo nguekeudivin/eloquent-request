@@ -121,17 +121,17 @@ Cette introduction pose le cadre des différents types d'utilisateurs avant de d
 -   UC 51 : Visualiser le tableau de bord admin (Admin)
 -   UC 52 : Visualiser le tableau de bord Mutualiste (Mutualiste)
 
-**Module 16 : Gestion des Utilisateurs de l'Application**
+**Module 16 : Gestion des Utilisateurs de l'Application** [OK]
 **[Implementer]**
 
 -   UC 53 : Gérer les comptes admins (Super Admin)
--   UC 54 : Consulter les logs d'activité (Super Admin)
 -   UC 55 : Gérer les rôles et permissions (Super Admin)
 -   UC 57 : Consulter les notifications (Admin/Mutualiste)
 -   UC 58 : Gérer les notifications (Admin)
 
 **[No implementer]**
 
+-   UC 54 : Consulter les logs d'activité (Super Admin)
 -   UC 56 : Gérer la politique de mot de passe (Super Admin)
 -   UC 59 : Gérer la configuration systeme (Admin)
 -   UC 60 : Visualiser les rapports (Admin)
@@ -4378,7 +4378,8 @@ Cette introduction pose le cadre des différents types d'utilisateurs avant de d
         -   (Optionnel) Un lien direct qui permet à l'utilisateur de naviguer vers l'élément du système auquel la notification fait référence (ex: cliquer sur "Nouveau message" mène à la conversation dans la messagerie UC 50/48, cliquer sur "Réclamation mise à jour" mène à la vue détaillée de la réclamation UC 44/43).
     7.  L'Utilisateur consulte la liste des notifications. Des options pour trier (par date) ou filtrer (lues/non lues, par type) peuvent être disponibles.
     8.  (Optionnel) L'Utilisateur clique sur une notification spécifique pour afficher son contenu complet (si non entièrement visible dans l'aperçu) ou pour accéder directement à l'élément lié.
-    9.  (Optionnel) Lorsque l'Utilisateur ouvre une notification (en cliquant dessus ou en la lisant), le système la marque automatiquement comme "lue" pour cet utilisateur spécifique. 10. L'Utilisateur prend connaissance des informations contenues dans les notifications.
+    9.  (Optionnel) Lorsque l'Utilisateur ouvre une notification (en cliquant dessus ou en la lisant), le système la marque automatiquement comme "lue" pour cet utilisateur spécifique.
+    10. L'Utilisateur prend connaissance des informations contenues dans les notifications.
 
 -   **Scénarios alternatifs et d'exception :**
 

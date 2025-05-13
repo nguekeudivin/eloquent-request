@@ -16,12 +16,12 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
        $this->call([
-        PermissionSeeder::class,
-        RoleSeeder::class,
-        TypeStatutSeeder::class,
-        AdminSeeder::class,
-        MutualisteSeeder::class,
-
+            PermissionSeeder::class,
+            RoleSeeder::class,
+            TypeStatutSeeder::class,
+            AdminSeeder::class,
+            MutualisteSeeder::class,
+            NotificationSeeder::class
        ]);
     }
 }

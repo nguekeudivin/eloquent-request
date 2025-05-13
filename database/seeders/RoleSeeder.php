@@ -27,11 +27,18 @@ class RoleSeeder extends Seeder
                 'code' => 'mutualiste',
                 'description' =>  "Acces aux donnees et operations d'un mutualiste. Cet access mutualiste autorise le mutualiste a voir ses informations et effectuer les operations systemes qui le concerne",
                 'permissions' => [
-                    'mutualiste:list:self', // list himself
-                    'mutualiste:view', // view details on the listing
-                    'mutualiste:view:*', // view all attributes
-                    'mutualiste:update', // update the details
-                    'mutualiste:update:*' // update all the attributes on the details
+                    // Mutualiste
+                    'mutualiste:list:self',
+                    'mutualiste:view',
+                    'mutualiste:view:*',
+                    'mutualiste:update',
+                    'mutualiste:update:*',
+                    // Notification
+                    'notification:list:mine',
+                    'notification:view',
+                    'notification:view:*',
+                    'notification:update',
+                    'notification:update:*'
                 ]
             ],
             [

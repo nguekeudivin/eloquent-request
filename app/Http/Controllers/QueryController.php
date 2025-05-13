@@ -30,7 +30,8 @@ class QueryController extends Controller
         // Register models.
         $this->queryService->setModels([
             "user" => \App\Models\User::class,
-            "post" => \App\Models\Post::class
+            "post" => \App\Models\Post::class,
+            "notification" => \App\Models\Notification::class
         ]);
 
         return response()->json($this->queryService->run($user));
