@@ -44,7 +44,7 @@ class AuthController extends Controller
         // Générer un nouveau token Sanctum pour cet utilisateur
         $token = $user->createToken('api-token')->plainTextToken;
 
-        $user->permissions = $user->getPermissions();
+       // $user->permissions = $user->getPermissions();
 
         // Retourner les détails de l'utilisateur et le token
         return response()->json([

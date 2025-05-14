@@ -31,7 +31,9 @@ class QueryController extends Controller
         $this->queryService->setModels([
             "user" => \App\Models\User::class,
             "post" => \App\Models\Post::class,
-            "notification" => \App\Models\Notification::class
+            "notification" => \App\Models\Notification::class,
+            "admin" => \App\Models\Admin::class,
+            "role" => \App\Models\Role::class
         ]);
 
         return response()->json($this->queryService->run($user));

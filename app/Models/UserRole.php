@@ -10,7 +10,8 @@ class UserRole extends Pivot
     protected $table = 'user_role';
 
     protected $fillable = [
-        // Removed 'date_attribution'
+        'user_id',
+        'role_id',
         'created_by_user_id',
         'updated_by_user_id',
     ];

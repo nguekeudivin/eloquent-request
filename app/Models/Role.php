@@ -13,13 +13,9 @@ class Role extends Model
 {
     use HasFactory;
 
-    protected $table = 'roles';
-    protected $primaryKey = 'id';
-    protected $keyType = 'int'; // Key type is integer
-    public $incrementing = true; // ID is auto-incrementing
 
     protected $fillable = [
-        'name', // Column name is now 'name'
+        'name',
         'code',
         'description',
     ];

@@ -5,8 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TypeStatutController;
 use App\Http\Controllers\QueryController;
-use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\AdminController;
 
 $endpoints = ['store', 'update', 'destroy'];
 
@@ -23,10 +24,13 @@ Route::middleware('auth:sanctum')->group(function () use($endpoints){
 
     Route::resource('type-statuts', TypeStatutController::class)->only($endpoints);
 
-    Route::resource('permissions', PermissionController::class)->only($endpoints);
+    Route::resource('roles', RoleController::class)->only($endpoints);
 
     Route::resource('notifications', NotificationController::class)->only($endpoints);
     Route::patch('/notifications/{userId}/read-all', [NotificationController::class,'readAll']);
+
+    Route::resource('admins', AdminController::class)->only($endpoints);
+
 
 });
 

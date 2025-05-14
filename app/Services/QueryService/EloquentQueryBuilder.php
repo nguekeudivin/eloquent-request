@@ -47,7 +47,7 @@ class EloquentQueryBuilder
         // Evaluates clauses
         if (property_exists($definition, "clauses")) {
             foreach ($definition->clauses as $clause) {
-                $this->evaluateClause($eloquentQuery, $clause->name, $clause->value);
+                $this->evaluateClause($eloquentQuery, $clause['name'], $clause['value']);
             }
         }
 
@@ -93,8 +93,12 @@ class EloquentQueryBuilder
                 $query = $relation->getQuery();
 
                 if (property_exists($definition, "select")) {
-                    $select = array_merge($definition->select, [$relation->getForeignKeyName()]);
-                    $query->select(...$select);
+
+                    $this->ensureRelationshipKeys($relation, $query);
+                    $query->addSelect(...$definition->select);
+
+                    // $select = array_merge($definition->select, [$relation->getForeignKeyName()]);
+                    // $query->select(...$select);
                 }
 
                 if (property_exists($definition, "clauses")) {
@@ -110,7 +114,7 @@ class EloquentQueryBuilder
                 }
 
                 if (property_exists($definition, "rels")) {
-                    $this->evaluateRels($query, $definition->rels);
+                    $this->evaluateRels($query, (object)$definition->rels);
                 }
 
                 //Appliquer les filtres de requete si presents
@@ -146,5 +150,39 @@ class EloquentQueryBuilder
         if (!empty($with)) {
             $eloquentQuery->with($with);
         }
+    }
+
+    /**
+     * Automatically adds required keys for any relationship type
+     */
+    protected function ensureRelationshipKeys( $relation, Builder $query): void
+    {
+        $requiredKeys = $this->getRequiredKeysForRelation($relation);
+
+        // Filter out already selected columns
+        $existingColumns = $query->getQuery()->columns ?: [];
+        $keysToAdd = array_diff($requiredKeys, $existingColumns);
+
+        if (!empty($keysToAdd)) {
+            $query->addSelect($keysToAdd);
+        }
+    }
+
+    /**
+     * Gets required keys for all relationship types
+     */
+    protected function getRequiredKeysForRelation( $relation): array
+    {
+        $keys = [$relation->getRelated()->getQualifiedKeyName()];
+
+        if ($relation instanceof BelongsTo || $relation instanceof HasOneOrMany) {
+            $keys[] = $relation->getQualifiedForeignKeyName();
+        }
+
+        if ($relation instanceof MorphOneOrMany) {
+            $keys[] = $relation->getQualifiedMorphType();
+        }
+
+        return $keys;
     }
 }

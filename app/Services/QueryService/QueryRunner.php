@@ -59,11 +59,14 @@ class QueryRunner
 
         // Gérer la limite
         if (property_exists($queryDefinition, "limit")) {
-            if ((int) $queryDefinition->limit == 1) {
-                return $eloquentQuery->first();
-            } else {
-                return $eloquentQuery->limit($queryDefinition->limit)->get();
-            }
+
+            return $eloquentQuery->limit($queryDefinition->limit)->get();
+
+            // if ((int) $queryDefinition->limit == 1) {
+            //     return $eloquentQuery->first();
+            // } else {
+            //     return $eloquentQuery->limit($queryDefinition->limit)->get();
+            // }
         }
 
         // Retourner tous les résultats si ni la pagination ni la limite ne sont spécifiées
