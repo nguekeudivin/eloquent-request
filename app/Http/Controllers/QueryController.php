@@ -33,7 +33,8 @@ class QueryController extends Controller
             "post" => \App\Models\Post::class,
             "notification" => \App\Models\Notification::class,
             "admin" => \App\Models\Admin::class,
-            "role" => \App\Models\Role::class
+            "role" => \App\Models\Role::class,
+            "mutualiste" => \App\Models\Mutualiste::class
         ]);
 
         return response()->json($this->queryService->run($user));

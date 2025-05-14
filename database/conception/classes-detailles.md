@@ -47,27 +47,6 @@
 
 ---
 
-**Nom de la Classe :** Super admin
-
-**Type :** Classe Principale (Hérite de admin)
-
-**Description :** Représente un admin disposant des droits les plus élevés, capable de gérer les users, les rôles, les permissions et la configuration système.
-
-**Attributs :**
-
--   `id` : UUID / Integer {Clé Primaire, Clé Étrangère} - Identifiant unique du super admin (hérité de admin).
-    _(Souvent, cette classe n'a pas d'attributs propres, son rôle spécial est défini par les permissions associées à son compte via le système de rôles)._
-
-**Méthodes Possibles :**
-
--   `gererRoles(actions, roleId, donnees)` : Boolean - Crée, modifie ou supprime des rôles.
--   `gererPermissions(actions, permissionId, donnees)` : Boolean - Crée, modifie ou supprime des permissions (ou les associe aux rôles).
--   `modifierConfigurationSysteme(parametres)` : Boolean - Met à jour les paramètres globaux du système.
--   `lancerSauvegardeBD()` : Boolean - Déclenche une sauvegarde manuelle de la base de données.
--   `gererComptesAdmin(actions, adminId, donnees)` : Boolean - Crée, modifie, active/désactive d'autres comptes admins.
-
----
-
 **Nom de la Classe :** Mutualiste
 
 **Type :** Classe Principale (Hérite de Utilisateur)

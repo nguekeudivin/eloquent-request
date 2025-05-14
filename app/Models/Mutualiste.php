@@ -10,7 +10,6 @@ class Mutualiste extends Model
 {
     use HasFactory;
 
-    protected $table = 'mutualistes';
     protected $primaryKey = 'id';
     protected $keyType = 'string';
     public $incrementing = false;

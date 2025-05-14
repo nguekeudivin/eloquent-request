@@ -8,6 +8,7 @@ use App\Http\Controllers\QueryController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\MutualisteController;
 
 $endpoints = ['store', 'update', 'destroy'];
 
@@ -31,6 +32,9 @@ Route::middleware('auth:sanctum')->group(function () use($endpoints){
 
     Route::resource('admins', AdminController::class)->only($endpoints);
 
+    Route::resource('mutualistes', MutualisteController::class)->only($endpoints);
+
+    Route::resource('ayant-droits', AyantDroitController::class)->only($endpoints);
 
 });
 
