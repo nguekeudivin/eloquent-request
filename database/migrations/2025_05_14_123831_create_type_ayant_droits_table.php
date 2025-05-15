@@ -12,8 +12,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('type_ayant_droits', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+            $table->id(); // Clé primaire auto-incrémentée
+            $table->string('libelle')->unique(); // Libellé unique
+            $table->text('description')->nullable(); // Description (TEXT nullable)
+
+            $table->timestamps(); // created_at et updated_at
+
+            // Champs d'audit (UUID si l'utilisateur a un UUID)
+            $table->uuid('created_by_user_id')->nullable();
+            $table->uuid('updated_by_user_id')->nullable();
+
+            // Définition des clés étrangères pour les champs d'audit
+            $table->foreign('created_by_user_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('updated_by_user_id')->references('id')->on('users')->onDelete('set null');
+
+            // Index optionnels
+            $table->index('created_by_user_id');
+            $table->index('updated_by_user_id');
         });
     }
 

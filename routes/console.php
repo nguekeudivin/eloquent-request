@@ -14,7 +14,5 @@ Artisan::command('inspire', function () {
 Artisan::command("demo", function(){
   //dump(Permission::pluck('name'));
 
-  $user = User::find("0196c940-4002-7156-90c6-5df4ce33b609");
-
-  dump($user->getPermissions());
+  dump(Permission::where('resource','conversation_participant')->get()->pluck('name'));
 });

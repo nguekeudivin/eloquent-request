@@ -15,7 +15,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule; // Pour valider l'ENUM sexe
 use App\Models\UserRole;
 use App\Models\Role;
-use App\Models\TypeStatut;
+use App\Models\StatusType;
 use Faker\Factory as Faker;
 
 class MutualisteController extends Controller
@@ -42,7 +42,7 @@ class MutualisteController extends Controller
         }
 
         // Recuperer le status actif.
-        $actifStatus = TypeStatut::where('code_interne', 'USER_ACTIF')
+        $actifStatus = StatusType::where('code_interne', 'USER_ACTIF')
             ->where('contexte', 'user')
             ->first();
 

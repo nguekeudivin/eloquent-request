@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('type_statuts', function (Blueprint $table) {
+        Schema::create('status_types', function (Blueprint $table) {
             $table->id();
             $table->string('code_interne', 50)->unique();
             $table->string('libelle', 100);
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('type_statuts');
+        Schema::dropIfExists('status_types');
     }
 };

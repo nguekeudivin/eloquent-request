@@ -13,7 +13,17 @@ return new class extends Migration
     {
         Schema::create('groupe_mutualistes', function (Blueprint $table) {
             $table->id();
+            $table->string('nom')->unique();
             $table->timestamps();
+
+            $table->uuid('created_by_user_id')->nullable();
+            $table->uuid('updated_by_user_id')->nullable();
+
+            $table->foreign('created_by_user_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('updated_by_user_id')->references('id')->on('users')->onDelete('set null');
+
+            $table->index('created_by_user_id');
+            $table->index('updated_by_user_id');
         });
     }
 

@@ -3,7 +3,7 @@
 -- Modèle Relationnel basé sur les diagrammes de classes détaillés
 -- Modifications:
 -- - Utilisation cohérente des UUID (VARCHAR(36)) pour les IDs principaux.
--- - Remplacement des ENUMs de statut par une table de lookup 'type_statuts'.
+-- - Remplacement des ENUMs de statut par une table de lookup 'status_types'.
 -- - Ajout des champs d'audit (created_at, updated_at, created_by_user_id, updated_by_user_id).
 -- ==============================================================
 
@@ -44,140 +44,11 @@ DROP TABLE IF EXISTS permissions;
 DROP TABLE IF EXISTS roles;
 DROP TABLE IF EXISTS mutualistes;
 DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS type_statuts;
+DROP TABLE IF EXISTS status_types;
 */
 
 
--- -------------------------------------------------------------
--- Table ayant_droits
--- -------------------------------------------------------------
-CREATE TABLE ayant_droits (
-    id VARCHAR(36) PRIMARY KEY,
-    mutualiste_id VARCHAR(36) NOT NULL,
-    nom VARCHAR(255) NOT NULL,
-    prenom VARCHAR(255) NOT NULL,
-    date_naissance DATE NOT NULL,
-    lien_parente VARCHAR(255) NOT NULL,
-    statut_id INT NOT NULL,
-    created_at DATETIME NULL,
-    updated_at DATETIME NULL,
-    created_by_user_id VARCHAR(36) NULL,
-    updated_by_user_id VARCHAR(36) NULL,
-    FOREIGN KEY (mutualiste_id) REFERENCES mutualistes(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (statut_id) REFERENCES type_statuts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-
-
-
--- -------------------------------------------------------------
--- Table contrats
--- -------------------------------------------------------------
-CREATE TABLE contrats (
-    id VARCHAR(36) PRIMARY KEY,
-    nom VARCHAR(255) NOT NULL UNIQUE,
-    description TEXT NULL,
-    date_debut_validite DATE NOT NULL,
-    date_fin_validite DATE NULL,
-    montant_cotisation_base DECIMAL(10, 2) NOT NULL,
-    periode_cotisation ENUM('Mensuel', 'Trimestriel', 'Annuel') NOT NULL,
-    est_actif BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at DATETIME NULL,
-    updated_at DATETIME NULL,
-    created_by_user_id VARCHAR(36) NULL,
-    updated_by_user_id VARCHAR(36) NULL,
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
--- -------------------------------------------------------------
--- Table adhesions
--- -------------------------------------------------------------
-CREATE TABLE adhesions (
-    id VARCHAR(36) PRIMARY KEY,
-    mutualiste_id VARCHAR(36) NOT NULL,
-    contrat_id VARCHAR(36) NOT NULL,
-    date_debut DATE NOT NULL,
-    date_fin DATE NULL,
-    statut_id INT NOT NULL,
-    reference_externe VARCHAR(255) NULL,
-    created_at DATETIME NULL,
-    updated_at DATETIME NULL,
-    created_by_user_id VARCHAR(36) NULL,
-    updated_by_user_id VARCHAR(36) NULL,
-    FOREIGN KEY (mutualiste_id) REFERENCES mutualistes(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (contrat_id) REFERENCES contrats(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (statut_id) REFERENCES type_statuts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
--- -------------------------------------------------------------
--- Table cotisations
--- -------------------------------------------------------------
-CREATE TABLE cotisations (
-    id VARCHAR(36) PRIMARY KEY,
-    adhesion_id VARCHAR(36) NOT NULL,
-    periode_concerne VARCHAR(7) NOT NULL,
-    montant_previste DECIMAL(10, 2) NOT NULL,
-    montant_paye DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
-    date_limite_paiement DATE NOT NULL,
-    date_paiement_effective DATE NULL,
-    statut_id INT NOT NULL,
-    reference_externe VARCHAR(255) NULL,
-    created_at DATETIME NULL,
-    updated_at DATETIME NULL,
-    created_by_user_id VARCHAR(36) NULL,
-    updated_by_user_id VARCHAR(36) NULL,
-    FOREIGN KEY (adhesion_id) REFERENCES adhesions(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (statut_id) REFERENCES type_statuts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
--- -------------------------------------------------------------
--- Table paiements
--- -------------------------------------------------------------
-CREATE TABLE paiements (
-    id VARCHAR(36) PRIMARY KEY,
-    mutualiste_id VARCHAR(36) NOT NULL,
-    date_paiement DATETIME NOT NULL,
-    montant_recu DECIMAL(10, 2) NOT NULL,
-    mode_paiement ENUM('Espèces', 'Virement Bancaire', 'Mobile Money', 'Chèque', 'Carte Bancaire', 'Autre') NOT NULL,
-    reference_transaction_externe VARCHAR(255) NULL UNIQUE,
-    statut_id INT NOT NULL,
-    enregistre_par_utilisateur_id VARCHAR(36) NOT NULL, -- This is the user who recorded, distinct from created_by
-    created_at DATETIME NULL,
-    updated_at DATETIME NULL,
-    created_by_user_id VARCHAR(36) NULL,
-    updated_by_user_id VARCHAR(36) NULL,
-    FOREIGN KEY (mutualiste_id) REFERENCES mutualistes(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (statut_id) REFERENCES type_statuts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (enregistre_par_utilisateur_id) REFERENCES users(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
--- -------------------------------------------------------------
--- Table paiements_cotisations
--- -------------------------------------------------------------
-CREATE TABLE paiements_cotisations (
-    paiement_id VARCHAR(36) NOT NULL,
-    cotisation_id VARCHAR(36) NOT NULL,
-    montant_applique DECIMAL(10, 2) NOT NULL,
-    created_at DATETIME NULL,
-    updated_at DATETIME NULL,
-    -- No created_by/updated_by here for simplicity on association table
-    PRIMARY KEY (paiement_id, cotisation_id),
-    FOREIGN KEY (paiement_id) REFERENCES paiements(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (cotisation_id) REFERENCES cotisations(id) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 
@@ -198,7 +69,7 @@ CREATE TABLE aides (
     created_by_user_id VARCHAR(36) NULL,
     updated_by_user_id VARCHAR(36) NULL,
     FOREIGN KEY (mutualiste_id) REFERENCES mutualistes(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (statut_id) REFERENCES type_statuts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (statut_id) REFERENCES status_types(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (verifiee_par_admin_id) REFERENCES admins(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (versee_par_admin_id) REFERENCES admins(id) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
@@ -253,7 +124,7 @@ CREATE TABLE prise_en_charges (
     FOREIGN KEY (ayant_droit_id) REFERENCES ayant_droits(id) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (adhesion_id) REFERENCES adhesions(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (statut_id) REFERENCES type_statuts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (statut_id) REFERENCES status_types(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (soumise_par_utilisateur_id) REFERENCES users(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (validee_par_admin_id) REFERENCES admins(id) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
@@ -299,7 +170,7 @@ CREATE TABLE materiels (
     updated_at DATETIME NULL,
     created_by_user_id VARCHAR(36) NULL,
     updated_by_user_id VARCHAR(36) NULL,
-    FOREIGN KEY (statut_id) REFERENCES type_statuts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (statut_id) REFERENCES status_types(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -326,7 +197,7 @@ CREATE TABLE pret_materiels (
     updated_by_user_id VARCHAR(36) NULL,
     FOREIGN KEY (materiel_id) REFERENCES materiels(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (mutualiste_id) REFERENCES mutualistes(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (statut_id) REFERENCES type_statuts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (statut_id) REFERENCES status_types(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (enregistre_par_admin_id) REFERENCES admins(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (retour_enregistre_par_admin_id) REFERENCES admins(id) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
@@ -353,7 +224,7 @@ CREATE TABLE reclamations (
     created_by_user_id VARCHAR(36) NULL,
     updated_by_user_id VARCHAR(36) NULL,
     FOREIGN KEY (mutualiste_id) REFERENCES mutualistes(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (statut_id) REFERENCES type_statuts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (statut_id) REFERENCES status_types(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (soumise_par_utilisateur_id) REFERENCES users(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (assignee_a_admin_id) REFERENCES admins(id) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
@@ -373,7 +244,7 @@ CREATE TABLE conversations (
     updated_at DATETIME NULL,
     created_by_user_id VARCHAR(36) NULL,
     updated_by_user_id VARCHAR(36) NULL,
-    FOREIGN KEY (statut_id) REFERENCES type_statuts(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (statut_id) REFERENCES status_types(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -415,29 +286,6 @@ CREATE TABLE conversation_participants (
     PRIMARY KEY (conversation_id, utilisateur_id),
     FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (utilisateur_id) REFERENCES users(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
--- -------------------------------------------------------------
--- Table notifications
--- -------------------------------------------------------------
-CREATE TABLE notifications (
-    id VARCHAR(36) PRIMARY KEY,
-    utilisateur_id VARCHAR(36) NOT NULL, -- This is the recipient, distinct from created_by (who triggered it)
-    date_generation DATETIME NOT NULL, -- Keep this specific date
-    type_notification VARCHAR(255) NOT NULL, -- Could be a lookup table
-    titre VARCHAR(255) NOT NULL,
-    contenu TEXT NULL,
-    est_lue BOOLEAN NOT NULL DEFAULT FALSE,
-    date_lecture DATETIME NULL,
-    lien_cible VARCHAR(255) NULL,
-    created_at DATETIME NULL,
-    updated_at DATETIME NULL,
-    created_by_user_id VARCHAR(36) NULL, -- User/System who triggered the notification
-    updated_by_user_id VARCHAR(36) NULL,
-    FOREIGN KEY (utilisateur_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -16,17 +16,17 @@ return new class extends Migration
             $table->string('prenom', 255);
             $table->date('date_naissance');
             $table->string('lieu_naissance', 255)->nullable();
-            $table->enum('sexe', ['H', 'F', 'Autre'])->nullable();
+            $table->enum('sexe', ['MASCULIN','FEMININ'])->nullable();
             $table->text('adresse')->nullable();
             $table->string('telephone', 255)->nullable();
             $table->date('date_premiere_adhesion');
+            $table->unsignedBigInteger('fonction_mutualiste_id');
             $table->string('profession');
             $table->timestamps(); // created_at et updated_at
 
             $table->string('created_by_user_id', 36)->nullable();
             $table->string('updated_by_user_id', 36)->nullable();
 
-            $table->foreign('id')->references('id')->on('users')->onDelete('CASCADE')->onUpdate('CASCADE');
             $table->foreign('created_by_user_id')->references('id')->on('users')->onDelete('SET NULL');
             $table->foreign('updated_by_user_id')->references('id')->on('users')->onDelete('SET NULL');
         });

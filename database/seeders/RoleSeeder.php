@@ -55,6 +55,49 @@ class RoleSeeder extends Seeder
                     'mutualiste:update:*',
                     'mutualiste:delete'
                 ]
+            ],
+            [
+                'name' => 'Gestion Reclammation',
+                'code' => 'gestion_reclammation',
+                'description' => 'Est charge de gerer les reclammations',
+                'permissions' => [
+                    'reclamation:list',
+                    'reclamation:view',
+                    "reclamation:view:*",
+                    'reclamation:create',
+                    'reclamation:create:*',
+                    'reclamation:update',
+                    'reclamation:update:*',
+                    'reclamation:delete',
+                    'conversation:list',
+                    'conversation:view',
+                    "conversation:view:*",
+                    'conversation:create',
+                    'conversation:create:*',
+                    'conversation:update',
+                    'conversation:update:*',
+                    'conversation:delete',
+                    'message:list',
+                    'message:view',
+                    "message:view:*",
+                    'message:create',
+                    'message:create:*',
+                    'message:update',
+                    'message:update:*',
+                    'message:delete',
+                    'conversation_participant:list',
+                    'conversation_participant:view',
+                    "conversation_participant:view:*",
+                    'conversation_participant:create',
+                    'conversation_participant:create:*',
+                    'conversation_participant:update',
+                    'conversation_participant:update:*',
+                    'conversation_participant:delete',
+                    'user:view',
+                    "user:view:*",
+                    'mutualiste:view',
+                    "mutualiste:view:*",
+                ]
             ]
         ];
 
@@ -69,7 +112,7 @@ class RoleSeeder extends Seeder
             );
 
             foreach($roleData['permissions'] as $permisionName){
-                RolePermission::create([
+                RolePermission::firstOrCreate([
                     'role_id' => $role->id,
                     'permission_id' => Permission::where('name',$permisionName)->first()->id
                 ]);

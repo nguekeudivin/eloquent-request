@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\TypeStatut;
+use App\Models\StatusType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +18,7 @@ class UserController extends Controller
             'username' => 'required|string|max:255|unique:users,username',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8',
-            'statut_id' => 'required|integer|exists:type_statuts,id',
+            'statut_id' => 'required|integer|exists:status_types,id',
             'last_connexion' => 'nullable|date', // Changé ici
         ]);
 
@@ -42,7 +42,7 @@ class UserController extends Controller
             'username' => 'string|max:255|unique:users,username,' . $id,
             'email' => 'string|email|max:255|unique:users,email,' . $id,
             'password' => 'nullable|string|min:8',
-            'statut_id' => 'integer|exists:type_statuts,id',
+            'statut_id' => 'integer|exists:status_types,id',
             'last_connexion' => 'nullable|date', // Changé ici
         ]);
 

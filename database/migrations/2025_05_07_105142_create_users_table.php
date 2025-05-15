@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('password');
 
             $table->foreignId('statut_id')
-                  ->constrained('type_statuts')
+                  ->constrained('status_types')
                   ->onDelete('RESTRICT')
                   ->onUpdate('CASCADE');
 

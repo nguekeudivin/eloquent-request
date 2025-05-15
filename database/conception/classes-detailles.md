@@ -464,9 +464,6 @@ _ `modifierProfession(libelle)` : Boolean \* `listerProfessions()` : List\<Profe
 -   `marquerRemboursee()` : Boolean - Change le statut à "remboursée" (souvent lié à la création d'une Liquidation).
 -   `associerJustificatif(documentId)` : Boolean - Lie un document justificatif à la demande.
 
-**Note**
-L'eligilite d'un mutualiste pour une prise en charge est calculee en prenant en compte les anciennes prestation recus
-
 ---
 
 **Nom de la classe**: ModaliteRemboursement

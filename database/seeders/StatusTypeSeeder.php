@@ -3,10 +3,10 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\TypeStatut;
+use App\Models\StatusType;
 use Illuminate\Support\Carbon;
 
-class TypeStatutSeeder extends Seeder
+class StatusTypeSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -100,7 +100,7 @@ class TypeStatutSeeder extends Seeder
                 'ordre_affichage' => 20,
             ],
              [
-                'code_interne' => 'COTISATION_EN_RETARD',
+                'code_interne' => 'COTISATION_EN RETARD',
                 'libelle' => 'Cotisation En Retard',
                 'description' => 'L\'échéance de cotisation est en retard de paiement.',
                 'contexte' => 'cotisation',
@@ -126,7 +126,7 @@ class TypeStatutSeeder extends Seeder
                 'ordre_affichage' => 20,
             ],
              [
-                'code_interne' => 'PRET_EN_RETARD',
+                'code_interne' => 'PRET_EN RETARD',
                 'libelle' => 'Prêt En Retard',
                 'description' => 'Le remboursement du prêt est en retard.',
                 'contexte' => 'pret',
@@ -212,12 +212,12 @@ class TypeStatutSeeder extends Seeder
         ];
 
         foreach ($statusTypes as $type) {
-            $existingStatus = TypeStatut::where('code_interne', $type['code_interne'])
+            $existingStatus = StatusType::where('code_interne', $type['code_interne'])
                                        ->where('contexte', $type['contexte'])
                                        ->first();
 
             if (!$existingStatus) {
-                TypeStatut::create([
+                StatusType::create([
                     'code_interne' => $type['code_interne'],
                     'libelle' => $type['libelle'],
                     'description' => $type['description'],

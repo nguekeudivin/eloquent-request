@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Admin;
-use App\Models\TypeStatut;
+use App\Models\StatusType;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Carbon;
 use App\Models\UserRole;
@@ -15,12 +15,12 @@ class AdminSeeder extends Seeder
 {
     public function run(): void
     {
-        $actifStatus = TypeStatut::where('code_interne', 'USER_ACTIF')
+        $actifStatus = StatusType::where('code_interne', 'USER_ACTIF')
                                    ->where('contexte', 'user')
                                    ->first();
 
         if (!$actifStatus) {
-             $this->command->info('Le statut "USER_ACTIF" (contexte "user") n\'a pas été trouvé. Veuillez exécuter TypeStatutSeeder d\'abord.');
+             $this->command->info('Le statut "USER_ACTIF" (contexte "user") n\'a pas été trouvé. Veuillez exécuter StatusTypeSeeder d\'abord.');
              return;
         }
 
@@ -57,6 +57,22 @@ class AdminSeeder extends Seeder
                     'prenom' => 'Mutualiste',
                     'service' => 'Direction',
                 ]
+            ],
+            [
+                'role' => 'gestion_reclammation',
+                'user' =>  [
+                    'username' => 'reclammation_service',
+                    'email' => 'reclammation_service@example.com',
+                    'password' => Hash::make('password'),
+                    'statut_id' => $actifStatus->id,
+                    'email_verified_at' => Carbon::now(),
+                    'last_connexion' => Carbon::now(),
+                ],
+                'admin' => [
+                    'nom' => 'Admin',
+                    'prenom' => '3',
+                    'service' => 'Direction',
+                ]
             ]
         ];
 
@@ -66,7 +82,7 @@ class AdminSeeder extends Seeder
             $user = User::firstOrCreate(['email' => $item['user']['email']], $item['user']);
 
             // Donner le role gestion mutualiste
-            UserRole::create([
+            UserRole::firstOrCreate([
                 'user_id' => $user->id,
                 'role_id' => Role::where('code',$item['role'])->first()->id
             ]);

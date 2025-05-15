@@ -12,7 +12,7 @@ use Illuminate\Support\Carbon;
 
 use App\Models\Admin;
 use App\Models\User;
-use App\Models\TypeStatut;
+use App\Models\StatusType;
 use App\Models\Role;
 use App\Models\UserRole;
 
@@ -33,7 +33,7 @@ class AdminController extends Controller
         }
 
         // Recuperer le status actif.
-        $actifStatus = TypeStatut::where('code_interne', 'USER_ACTIF')
+        $actifStatus = StatusType::where('code_interne', 'USER_ACTIF')
                                    ->where('contexte', 'user')
                                    ->first();
 

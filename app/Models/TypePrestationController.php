@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Profession extends Model
+class TypePrestationController extends Model
 {
     //
 }

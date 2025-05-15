@@ -51,7 +51,7 @@ class User extends Authenticatable
     // Relations inchangées
     public function statut()
     {
-        return $this->belongsTo(TypeStatut::class, 'statut_id');
+        return $this->belongsTo(StatusType::class, 'statut_id');
     }
 
     public function admin()
@@ -94,5 +94,14 @@ class User extends Authenticatable
     public function hasPermission(string $permissionName){
       return in_array($permissionName, $this->getPermissions());
     }
+
+    public function conversations(): BelongsToMany
+    {
+        return $this->belongsToMany(Conversation::class, 'conversation_participant', 'utilisateur_id', 'conversation_id')
+                    ->using(ConversationParticipant::class) // Utiliser le modèle pivot
+                    ->withPivot('date_jointure', 'est_actif') // Charger les champs supplémentaires
+                    ->withTimestamps(); // Gérer created_at/updated_at de la pivot
+    }
+
 
 }
