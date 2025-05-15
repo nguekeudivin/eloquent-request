@@ -22,11 +22,11 @@ class ConversationParticipantController extends Controller
         $validated = $this->validateWithPermissions($request, [
             'conversation_participant:create' => [
                 'conversation_id' => ['required', 'uuid', 'exists:conversations,id'],
-                'utilisateur_id' => ['required', 'uuid', 'exists:users,id'],
+                'user_id' => ['required', 'uuid', 'exists:users,id'],
                  // Optionnel : validation pour éviter les doublons actifs
                  Rule::unique('conversation_participant')->where(function ($query) use ($request) {
                      return $query->where('conversation_id', $request->conversation_id)
-                                  ->where('utilisateur_id', $request->utilisateur_id)
+                                  ->where('user_id', $request->user_id)
                                   ->where('est_actif', true);
                  })
             ],
@@ -34,7 +34,7 @@ class ConversationParticipantController extends Controller
 
         // Rechercher si une entrée inactive existe déjà
         $participant = ConversationParticipant::where('conversation_id', $validated['conversation_id'])
-                                              ->where('utilisateur_id', $validated['utilisateur_id'])
+                                              ->where('user_id', $validated['user_id'])
                                               ->first();
 
         if ($participant) {
@@ -69,7 +69,7 @@ class ConversationParticipantController extends Controller
          try {
               // Trouver l'entrée spécifique dans la table pivot
               $participant = ConversationParticipant::where('conversation_id', $conversationId)
-                                                    ->where('utilisateur_id', $utilisateurId)
+                                                    ->where('user_id', $utilisateurId)
                                                     ->firstOrFail();
          } catch (ModelNotFoundException $e) {
               return response()->json(['message' => 'Participant non trouvé dans cette conversation.'], 404);

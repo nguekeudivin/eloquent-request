@@ -65,7 +65,7 @@ class PriseEnChargeController extends Controller
                  'statut' => ['sometimes', 'required', 'string', Rule::in(PriseEnCharge::STATUS)],
                  'description' => ['nullable', 'string'],
                  // Qui soumet la demande (peut être le mutualiste authentifié ou un admin pour le mutualiste)
-                 'soumise_par_utilisateur_id' => ['required', 'uuid', 'exists:users,id'],
+                 'soumise_par_user_id' => ['required', 'uuid', 'exists:users,id'],
                  // validee_par_admin_id est null à la création
                  'validee_par_admin_id' => ['nullable', 'uuid', 'exists:users,id'],
             ],
@@ -159,7 +159,7 @@ class PriseEnChargeController extends Controller
                  // Statut peut être mis à jour via update si permis (mais souvent via méthodes spécifiques)
                  'statut' => ['sometimes', 'required', 'string', Rule::in(PriseEnCharge::STATUS)],
                  'description' => ['nullable', 'string'],
-                 // soumise_par_utilisateur_id ne devrait généralement pas être mis à jour
+                 // soumise_par_user_id ne devrait généralement pas être mis à jour
                  // validee_par_admin_id peut être mis à jour via update si permis (mais souvent via valider/refuser)
                  'validee_par_admin_id' => ['nullable', 'uuid', 'exists:users,id'],
             ],

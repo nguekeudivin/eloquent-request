@@ -34,7 +34,7 @@ return new class extends Migration
             $table->text('description')->nullable(); // Description ou motif
 
             // Utilisateur qui a soumis la demande
-            $table->uuid('soumise_par_utilisateur_id');
+            $table->uuid('soumise_par_user_id');
             // Admin qui a validé ou refusé la demande (Nullable)
             $table->uuid('validee_par_admin_id')->nullable();
 
@@ -49,7 +49,7 @@ return new class extends Migration
             $table->foreign('ayant_droit_id')->references('id')->on('ayant_droits')->onDelete('set null');
             $table->foreign('prestation_id')->references('id')->on('prestations')->onDelete('restrict'); // RESTRICT pour les tables lookup/référence
             $table->foreign('adhesion_id')->references('id')->on('adhesions')->onDelete('restrict'); // RESTRICT si l'adhésion doit exister
-            $table->foreign('soumise_par_utilisateur_id')->references('id')->on('users')->onDelete('restrict'); // RESTRICT si l'utilisateur soumetteur doit exister
+            $table->foreign('soumise_par_user_id')->references('id')->on('users')->onDelete('restrict'); // RESTRICT si l'utilisateur soumetteur doit exister
             $table->foreign('validee_par_admin_id')->references('id')->on('users')->onDelete('set null');
             $table->foreign('created_by_user_id')->references('id')->on('users')->onDelete('set null');
             $table->foreign('updated_by_user_id')->references('id')->on('users')->onDelete('set null');
@@ -63,7 +63,7 @@ return new class extends Migration
             $table->index('statut');
             $table->index('date_soins_facture');
             $table->index('date_soumission');
-            $table->index('soumise_par_utilisateur_id');
+            $table->index('soumise_par_user_id');
             $table->index('validee_par_admin_id');
             $table->index('created_by_user_id');
             $table->index('updated_by_user_id');

@@ -122,7 +122,7 @@ class PrestationSeeder extends Seeder
                 'date_soumission' => now()->subDays(rand(1, 10)),
                 'date_mise_a_jour_statut' => now(),
                 'statut' => $faker->randomElement($statuts),
-                'soumise_par_utilisateur_id' => $mutualiste->id,
+                'soumise_par_user_id' => $mutualiste->id,
             ]);
         }
 

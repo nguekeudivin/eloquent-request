@@ -45,6 +45,9 @@ class User extends Authenticatable
             'self' => function (Builder $query, $user) {
                 $query->where('id', $user->id);
             },
+            'mutualiste' => function (Builder $query, $user) {
+                $query->where('id', $user->id);
+            },
         ];
     }
 
@@ -97,7 +100,7 @@ class User extends Authenticatable
 
     public function conversations(): BelongsToMany
     {
-        return $this->belongsToMany(Conversation::class, 'conversation_participant', 'utilisateur_id', 'conversation_id')
+        return $this->belongsToMany(Conversation::class, 'conversation_participant', 'user_id', 'conversation_id')
                     ->using(ConversationParticipant::class) // Utiliser le modèle pivot
                     ->withPivot('date_jointure', 'est_actif') // Charger les champs supplémentaires
                     ->withTimestamps(); // Gérer created_at/updated_at de la pivot

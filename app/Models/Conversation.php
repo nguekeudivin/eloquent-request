@@ -67,16 +67,16 @@ class Conversation extends Model
     }
 
     // Relation HasMany vers les participants (nécessite un modèle ConversationParticipant)
-    // public function participants(): HasMany
-    // {
-    //     return $this->hasMany(ConversationParticipant::class, 'conversation_id');
-    // }
+    public function participants(): HasMany
+    {
+        return $this->hasMany(ConversationParticipant::class, 'conversation_id');
+    }
 
     // Relation HasMany vers les messages (nécessite un modèle Message)
-    // public function messages(): HasMany
-    // {
-    //     return $this->hasMany(Message::class, 'conversation_id');
-    // }
+    public function messages(): HasMany
+    {
+        return $this->hasMany(Message::class, 'conversation_id');
+    }
 
 
     /**
@@ -94,33 +94,5 @@ class Conversation extends Model
         return false;
     }
 
-    /**
-     * Ajoute un participant à la conversation.
-     * Nécessite un modèle ConversationParticipant et une relation.
-     *
-     * @param string $userId L'ID de l'utilisateur à ajouter.
-     * @return bool Succès de l'opération.
-     */
-    // public function ajouterParticipant(string $userId): bool
-    // {
-        // Implémenter la logique d'ajout de participant ici
-        // Ex: $this->participants()->create(['user_id' => $userId]);
-        // return true; // ou false
-    // }
-
-    /**
-     * Envoie un message dans la conversation.
-     * Nécessite un modèle Message et une relation.
-     *
-     * @param string $userId L'ID de l'utilisateur qui envoie le message.
-     * @param string $contenu Le contenu du message.
-     * @return mixed Le modèle Message créé ou false en cas d'échec.
-     */
-    // public function envoyerMessage(string $userId, string $contenu): mixed
-    // {
-        // Implémenter la logique d'envoi de message ici
-        // Ex: return $this->messages()->create(['user_id' => $userId, 'contenu' => $contenu]);
-        // return false;
-    // }
 
 }

@@ -67,6 +67,4 @@ class Caisse extends Model
         return $totalEntrees - $totalSorties;
     }
 
-
-
 }

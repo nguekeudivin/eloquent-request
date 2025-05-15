@@ -15,7 +15,7 @@ class ConversationParticipant extends Pivot
 
     protected $casts = [
         'conversation_id' => 'string',
-        'utilisateur_id' => 'string',
+        'user_id' => 'string',
         'date_jointure' => 'datetime',
         'est_actif' => 'boolean',
         'created_at' => 'datetime',
@@ -24,7 +24,7 @@ class ConversationParticipant extends Pivot
 
      protected $guarded = [
         'conversation_id',
-        'utilisateur_id',
+        'user_id',
         'created_at',
         'updated_at',
      ];
@@ -37,7 +37,7 @@ class ConversationParticipant extends Pivot
 
       public function utilisateur(): BelongsTo
      {
-         return $this->belongsTo(User::class, 'utilisateur_id');
+         return $this->belongsTo(User::class, 'user_id');
      }
 
     /**

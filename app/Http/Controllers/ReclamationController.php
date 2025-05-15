@@ -28,7 +28,7 @@ class RéclamationController extends Controller
                 'description' => ['required', 'string'],
                 // Valider avec les statuts en majuscules
                 'statut' => ['sometimes', 'required', 'string', Rule::in(['SOUMISE', 'EN COURS', 'RESOLUE', 'FERMEE', 'ESCALADEE'])],
-                 'soumise_par_utilisateur_id' => ['required', 'uuid', 'exists:users,id'],
+                 'soumise_par_user_id' => ['required', 'uuid', 'exists:users,id'],
                  'assignee_a_admin_id' => ['nullable', 'uuid', 'exists:users,id'],
             ],
         ]);

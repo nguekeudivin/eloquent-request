@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('caisses', function (Blueprint $table) {
             $table->id();
             $table->string('nom')->unique();
-            $table->string('description')->nullable();
+            $table->text('description')->nullable();
             $table->string('devise');
 
             $table->timestamps();

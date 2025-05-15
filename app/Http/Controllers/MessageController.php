@@ -24,8 +24,8 @@ class MessageController extends Controller
         $validated = $this->validateWithPermissions($request, [
             'message:create' => [
                 'conversation_id' => ['required', 'uuid', 'exists:conversations,id'],
-                // utilisateur_id doit exister et idéalement être un participant de la conversation
-                'utilisateur_id' => ['required', 'uuid', 'exists:users,id'], // Optionnel: Rule::exists('conversation_participants', 'user_id')->where('conversation_id', $request->conversation_id)
+                // user_id doit exister et idéalement être un participant de la conversation
+                'user_id' => ['required', 'uuid', 'exists:users,id'], // Optionnel: Rule::exists('conversation_participants', 'user_id')->where('conversation_id', $request->conversation_id)
                 'contenu' => ['required', 'string'],
                 // est_lu est false par défaut à la création
                 'est_lu' => ['boolean'], // Permettre de le spécifier si besoin

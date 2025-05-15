@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('categorie_sorties', function (Blueprint $table) {
             $table->id();
             $table->string('libelle')->unique();
-            $table->string('description')->nullable();
+            $table->text('description')->nullable();
             $table->boolean('est_active')->default(true);
 
             $table->timestamps();

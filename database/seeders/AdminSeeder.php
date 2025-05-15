@@ -59,9 +59,9 @@ class AdminSeeder extends Seeder
                 ]
             ],
             [
-                'role' => 'gestion_reclammation',
+                'role' => 'gestion_reclamation',
                 'user' =>  [
-                    'username' => 'reclammation_service',
+                    'username' => 'reclamation_service',
                     'email' => 'reclammation_service@example.com',
                     'password' => Hash::make('password'),
                     'statut_id' => $actifStatus->id,

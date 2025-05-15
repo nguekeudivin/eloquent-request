@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\Rule;
 use App\Models\Caisse;
 use App\Models\CategorieEntree;
-use App\Models\Paiement;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 
@@ -31,7 +30,6 @@ class EntreeController extends Controller
                 'source_motif' => ['required', 'string', 'max:255'],
                 'description' => ['nullable', 'text'],
                 'reference_externe' => ['nullable', 'string', 'max:255'],
-                'paiement_id' => ['nullable', 'uuid', 'exists:paiements,id'],
                  // enregistre_par_admin_id doit être l'utilisateur authentifié ou spécifié si permis
                  'enregistre_par_admin_id' => ['required', 'uuid', 'exists:users,id'], // Assurez-vous que cet user est bien un admin
             ],
@@ -74,7 +72,6 @@ class EntreeController extends Controller
                 'source_motif' => ['sometimes', 'required', 'string', 'max:255'],
                 'description' => ['nullable', 'text'],
                 'reference_externe' => ['nullable', 'string', 'max:255'],
-                'paiement_id' => ['nullable', 'uuid', 'exists:paiements,id'],
                  'enregistre_par_admin_id' => ['sometimes', 'required', 'uuid', 'exists:users,id'], // Assurez-vous que cet user est bien un admin
             ],
         ]);

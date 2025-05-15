@@ -23,8 +23,6 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('reference_externe')->nullable();
 
-            $table->uuid('paiement_id')->nullable(); // FK vers Paiement (Nullable)
-
             $table->dateTime('date_enregistrement');
             $table->uuid('enregistre_par_admin_id');
 
@@ -35,7 +33,6 @@ return new class extends Migration
 
             $table->foreign('caisse_id')->references('id')->on('caisses')->onDelete('restrict');
             $table->foreign('categorie_entree_id')->references('id')->on('categorie_entrees')->onDelete('set null');
-            $table->foreign('paiement_id')->references('id')->on('paiements')->onDelete('set null');
             $table->foreign('enregistre_par_admin_id')->references('id')->on('users')->onDelete('restrict');
             $table->foreign('created_by_user_id')->references('id')->on('users')->onDelete('set null');
             $table->foreign('updated_by_user_id')->references('id')->on('users')->onDelete('set null');
@@ -43,7 +40,6 @@ return new class extends Migration
             $table->index('caisse_id');
             $table->index('categorie_entree_id');
             $table->index('date_heure_mouvement');
-            $table->index('paiement_id');
             $table->index('enregistre_par_admin_id');
             $table->index('created_by_user_id');
             $table->index('updated_by_user_id');

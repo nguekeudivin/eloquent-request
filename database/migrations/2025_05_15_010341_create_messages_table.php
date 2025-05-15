@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
 
             $table->uuid('conversation_id');
-            $table->uuid('utilisateur_id');
+            $table->uuid('user_id');
 
             $table->dateTime('date_envoi');
             $table->text('contenu');
@@ -24,10 +24,10 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('conversation_id')->references('id')->on('conversations')->onDelete('cascade');
-            $table->foreign('utilisateur_id')->references('id')->on('users')->onDelete('restrict');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('restrict');
 
             $table->index('conversation_id');
-            $table->index('utilisateur_id');
+            $table->index('user_id');
             $table->index('date_envoi');
             $table->index('est_lu');
         });

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('conversation_participant', function (Blueprint $table) {
             // Clés étrangères constituant la clé primaire composite
             $table->uuid('conversation_id');
-            $table->uuid('utilisateur_id');
+            $table->uuid('user_id');
 
             $table->dateTime('date_jointure');
             $table->boolean('est_actif')->default(true);
@@ -22,11 +22,11 @@ return new class extends Migration
             $table->timestamps();
 
             // Définition de la clé primaire composite
-            $table->primary(['conversation_id', 'utilisateur_id']);
+            $table->primary(['conversation_id', 'user_id']);
 
             // Définition des clés étrangères
             $table->foreign('conversation_id')->references('id')->on('conversations')->onDelete('cascade');
-            $table->foreign('utilisateur_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
             // Index optionnels
             $table->index('date_jointure');

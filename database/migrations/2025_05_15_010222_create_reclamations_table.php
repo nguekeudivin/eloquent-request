@@ -25,7 +25,7 @@ return new class extends Migration
             $table->enum('statut', ['SOUMISE', 'EN COURS', 'RESOLUE', 'FERMEE', 'ESCALADEE']);
             $table->dateTime('date_mise_a_jour_statut');
 
-            $table->uuid('soumise_par_utilisateur_id');
+            $table->uuid('soumise_par_user_id');
             $table->uuid('assignee_a_admin_id')->nullable();
 
             $table->timestamps();
@@ -34,7 +34,7 @@ return new class extends Migration
             $table->uuid('updated_by_user_id')->nullable();
 
             $table->foreign('mutualiste_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('soumise_par_utilisateur_id')->references('id')->on('users')->onDelete('restrict');
+            $table->foreign('soumise_par_user_id')->references('id')->on('users')->onDelete('restrict');
             $table->foreign('assignee_a_admin_id')->references('id')->on('users')->onDelete('set null');
             $table->foreign('created_by_user_id')->references('id')->on('users')->onDelete('set null');
             $table->foreign('updated_by_user_id')->references('id')->on('users')->onDelete('set null');
@@ -43,7 +43,7 @@ return new class extends Migration
             $table->index('mutualiste_id');
             $table->index('statut');
             $table->index('date_soumission');
-            $table->index('soumise_par_utilisateur_id');
+            $table->index('soumise_par_user_id');
             $table->index('assignee_a_admin_id');
             $table->index('created_by_user_id');
             $table->index('updated_by_user_id');

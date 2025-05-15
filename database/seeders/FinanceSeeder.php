@@ -101,7 +101,6 @@ class FinanceSeeder extends Seeder
                 'source_motif' => 'Source/Motif Entrée ' . ($i + 1),
                 'description' => 'Description entrée ' . ($i + 1),
                 'reference_externe' => 'REF-ENT-' . Str::random(5),
-                'paiement_id' => null,
                 'date_enregistrement' => now(),
                 'enregistre_par_admin_id' => $financeUser->id,
                 'created_at' => now(),

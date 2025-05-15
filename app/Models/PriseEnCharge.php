@@ -38,7 +38,7 @@ class PriseEnCharge extends Model
         'date_mise_a_jour_statut',
         'statut',
         'description',
-        'soumise_par_utilisateur_id',
+        'soumise_par_user_id',
         'validee_par_admin_id',
     ];
 
@@ -53,7 +53,7 @@ class PriseEnCharge extends Model
         'date_soumission' => 'datetime',
         'date_mise_a_jour_statut' => 'datetime',
         'statut' => 'string',
-        'soumise_par_utilisateur_id' => 'string',
+        'soumise_par_user_id' => 'string',
         'validee_par_admin_id' => 'string',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -91,7 +91,7 @@ class PriseEnCharge extends Model
 
     public function soumiseParUtilisateur(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'soumise_par_utilisateur_id');
+        return $this->belongsTo(User::class, 'soumise_par_user_id');
     }
 
     public function valideeParAdmin(): BelongsTo

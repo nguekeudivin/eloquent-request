@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('categorie_entrees', function (Blueprint $table) {
             $table->id();
             $table->string('libelle')->unique();
-            $table->string('description')->nullable();
+            $table->text('description')->nullable();
             $table->boolean('est_actif')->default(true);
 
             $table->timestamps();

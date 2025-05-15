@@ -27,7 +27,7 @@ class ReclamationSeeder extends Seeder
         $mutualistes = Mutualiste::with('user')->inRandomOrder()->take(5)->get();
 
         // 2. Récupérer l’admin avec username "reclammation_service"
-        $admin = User::where('username', 'reclammation_service')->firstOrFail();
+        $admin = User::where('username', 'reclamation_service')->firstOrFail();
 
         $statuts = ['SOUMISE', 'EN COURS', 'RESOLUE', 'FERMEE', 'ESCALADEE'];
 
@@ -46,7 +46,7 @@ class ReclamationSeeder extends Seeder
                 'description' => $faker->paragraph(),
                 'statut' => $statuts[$index % count($statuts)],
                 'date_mise_a_jour_statut' => now(),
-                'soumise_par_utilisateur_id' => $user->id,
+                'soumise_par_user_id' => $user->id,
                 'assignee_a_admin_id' => $admin->id,
                 'created_by_user_id' => $user->id,
                 'updated_by_user_id' => $user->id,
@@ -68,7 +68,7 @@ class ReclamationSeeder extends Seeder
             DB::table('conversation_participant')->insert([
                 [
                     'conversation_id' => $conversation->id,
-                    'utilisateur_id' => $user->id,
+                    'user_id' => $user->id,
                     'date_jointure' => now(),
                     'est_actif' => true,
                     'created_at' => now(),
@@ -76,7 +76,7 @@ class ReclamationSeeder extends Seeder
                 ],
                 [
                     'conversation_id' => $conversation->id,
-                    'utilisateur_id' => $admin->id,
+                    'user_id' => $admin->id,
                     'date_jointure' => now(),
                     'est_actif' => true,
                     'created_at' => now(),
@@ -98,7 +98,7 @@ class ReclamationSeeder extends Seeder
                 Message::create([
                     'id' => Str::uuid(),
                     'conversation_id' => $conversation->id,
-                    'utilisateur_id' => $m[0],
+                    'user_id' => $m[0],
                     'date_envoi' => now(),
                     'contenu' => $m[1],
                     'est_lu' => true,

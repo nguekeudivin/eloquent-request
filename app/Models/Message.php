@@ -22,7 +22,7 @@ class Message extends Model
 
     protected $fillable = [
         'conversation_id',
-        'utilisateur_id',
+        'user_id',
         'date_envoi',
         'contenu',
         'est_lu',
@@ -30,7 +30,7 @@ class Message extends Model
 
     protected $casts = [
         'conversation_id' => 'string',
-        'utilisateur_id' => 'string',
+        'user_id' => 'string',
         'date_envoi' => 'datetime',
         'est_lu' => 'boolean',
         'created_at' => 'datetime',
@@ -50,7 +50,7 @@ class Message extends Model
 
     public function utilisateur(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'utilisateur_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**

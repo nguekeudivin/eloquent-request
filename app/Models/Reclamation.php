@@ -28,7 +28,7 @@ class Reclamation extends Model
         'description',
         'statut',
         'date_mise_a_jour_statut',
-        'soumise_par_utilisateur_id',
+        'soumise_par_user_id',
         'assignee_a_admin_id',
     ];
 
@@ -38,7 +38,7 @@ class Reclamation extends Model
         // Utiliser les statuts en majuscules ici
         'statut' => 'string', // Le type reste string pour l'ENUM
         'mutualiste_id' => 'string',
-        'soumise_par_utilisateur_id' => 'string',
+        'soumise_par_user_id' => 'string',
         'assignee_a_admin_id' => 'string',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -59,7 +59,7 @@ class Reclamation extends Model
 
     public function soumiseParUtilisateur(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'soumise_par_utilisateur_id');
+        return $this->belongsTo(User::class, 'soumise_par_user_id');
     }
 
     public function assigneeAAdmin(): BelongsTo

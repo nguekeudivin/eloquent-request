@@ -76,16 +76,4 @@ class CategorieEntree extends Model
         return $this->save();
     }
 
-
-    public static function queryFilters(): array
-    {
-        return [
-            'libelle' => function (\Illuminate\Database\Eloquent\Builder $query, string $libelle) {
-                $query->where('libelle', 'like', '%' . $libelle . '%');
-            },
-             'actif' => function (\Illuminate\Database\Eloquent\Builder $query, bool $isActive = true) {
-                 $query->where('est_actif', $isActive);
-             },
-        ];
-    }
 }
