@@ -32,10 +32,15 @@ class CotisationController extends Controller
                 // montant_paye, date_paiement_effective, statut, reference_externe sont optionnels à la création
                  'montant_paye' => ['sometimes', 'decimal:0,2', 'min:0'], // Peut être spécifié si paiement initial
                  'date_paiement_effective' => ['nullable', 'date', 'after_or_equal:date_limite_paiement'],
-                 'statut' => ['sometimes', 'required', 'string', Rule::in(['due', 'payée', 'partielle', 'en retard', 'annulée'])],
+                //  'statut' => ['sometimes', 'required', 'string', Rule::in(['due', 'payée', 'partielle', 'en retard', 'annulée'])],
                  'reference_externe' => ['nullable', 'string', 'max:255'],
             ],
         ]);
+
+
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+       }
 
         // Si le statut n'est pas fourni, le définir par défaut (due, partielle, payée) basé sur montant_paye
          if (!isset($validated['statut'])) {
@@ -53,6 +58,7 @@ class CotisationController extends Controller
 
 
         $cotisation = Cotisation::create($validated);
+        $cotisation->adhesion->mutualiste;
 
         if (Auth::check()) {
              $cotisation->update(['created_by_user_id' => Auth::id()]);

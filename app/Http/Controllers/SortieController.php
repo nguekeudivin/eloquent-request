@@ -28,14 +28,19 @@ class SortieController extends Controller
                 'date_heure_mouvement' => ['required', 'date'],
                 'montant' => ['required', 'decimal:0,2', 'min:0.01'],
                 'beneficiaire_motif' => ['required', 'string', 'max:255'],
-                'description' => ['nullable', 'text'],
+                'description' => ['nullable'],
                 'reference_externe' => ['nullable', 'string', 'max:255'],
-                 'enregistre_par_admin_id' => ['required', 'uuid', 'exists:users,id'], // Assurez-vous que cet user est bien un admin
             ],
         ]);
 
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+        }
+
         // Définir la date d'enregistrement à maintenant
         $validated['date_enregistrement'] = now();
+        $validated['enregistre_par_admin_id'] = $request->user()->id;
+
 
         $sortie = Sortie::create($validated);
 
@@ -69,11 +74,14 @@ class SortieController extends Controller
                 'date_heure_mouvement' => ['sometimes', 'required', 'date'],
                 'montant' => ['sometimes', 'required', 'decimal:0,2', 'min:0.01'],
                 'beneficiaire_motif' => ['sometimes', 'required', 'string', 'max:255'],
-                'description' => ['nullable', 'text'],
+                'description' => ['nullable'],
                 'reference_externe' => ['nullable', 'string', 'max:255'],
-                 'enregistre_par_admin_id' => ['sometimes', 'required', 'uuid', 'exists:users,id'], // Assurez-vous que cet user est bien un admin
             ],
         ]);
+
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+        }
 
         $sortie->fill($validated);
 

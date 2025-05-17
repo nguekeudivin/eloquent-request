@@ -57,7 +57,7 @@ class Allocation extends Model
         return $this->belongsTo(Mutualiste::class, 'mutualiste_id');
     }
 
-    public function typeAllocation(): BelongsTo
+    public function type_allocation(): BelongsTo
     {
         return $this->belongsTo(TypeAllocation::class, 'type_allocation_id');
     }

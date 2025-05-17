@@ -25,6 +25,10 @@ class CaisseController extends Controller
             ],
         ]);
 
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+        }
+
         $caisse = Caisse::create($validated);
 
         if (Auth::check()) {
@@ -51,6 +55,11 @@ class CaisseController extends Controller
                 'devise' => ['sometimes', 'required', 'string', 'max:10'],
             ],
         ]);
+
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+        }
+
 
         $caisse->fill($validated);
 

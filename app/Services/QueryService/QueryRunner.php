@@ -50,6 +50,7 @@ class QueryRunner
         }
 
 
+
         // Gérer la pagination
         if (property_exists($queryDefinition, "paginate") && !property_exists($queryDefinition, "limit")) {
             $page = $queryDefinition->paginate[0] ?? null;

@@ -88,7 +88,7 @@ class PermissionEvaluator
 
                 // User as total access token user relation data.
                 if (in_array("{$modelSingulier}:view:{$relationName}", $userPermissions) || in_array("{$modelSingulier}:view:*", $userPermissions)) {
-                    $relatedModelSingulier = Str::singular($relationName);
+                    $relatedModelSingulier = french_singular($relationName);
 
                     $filtered = $this->filterModelQueryBasNiveau($relatedModelSingulier, (object)$relationQuery, $userPermissions);
                     if(isset($filtered->select)){
@@ -97,7 +97,7 @@ class PermissionEvaluator
                 }
                 else{
                     // If not check if partial access is allow under some conditions.
-                    $relatedModelSingulier = Str::singular($relationName);
+                    $relatedModelSingulier = french_singular($relationName);
                     $relatedModelClass = $this->models[$relatedModelSingulier];
 
                     $appliedFilters = $this->getApplicableRelationFilters("{$modelSingulier}:view:{$relationName}", $userPermissions, $relatedModelClass);

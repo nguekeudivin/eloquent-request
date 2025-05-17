@@ -19,7 +19,7 @@ class FonctionMutualisteController extends Controller
     {
         $validated = $this->validateWithPermissions($request, [
             'fonction_mutualiste:create' => [
-                'nom' => [
+                'libelle' => [
                     'required',
                     'string',
                     'max:255',
@@ -32,6 +32,11 @@ class FonctionMutualisteController extends Controller
                 'groupe_mutualiste_id' => ['required', 'integer', 'exists:groupe_mutualistes,id'],
             ],
         ]);
+
+
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+        }
 
         // Créer la fonction en utilisant create()
         $fonctionMutualiste = FonctionMutualiste::create($validated);
@@ -73,7 +78,14 @@ class FonctionMutualisteController extends Controller
             ],
         ]);
 
+
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+        }
+
         $fonctionMutualiste->fill($validated);
+
+        $fonctionMutualiste->groupe_mutualiste;
 
          if (Auth::check()) {
             $fonctionMutualiste->updated_by_user_id = Auth::id();

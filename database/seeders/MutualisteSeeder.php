@@ -18,6 +18,7 @@ use App\Models\Role;
 use App\Models\FonctionMutualiste;
 use App\Models\GroupeMutualiste;
 use App\Models\Adhesion;
+use App\Models\AyantDroit;
 
 class MutualisteSeeder extends Seeder
 {
@@ -88,7 +89,7 @@ class MutualisteSeeder extends Seeder
                 );
 
                 // Rechercher un contrat d'adhesion et l'entregistre sous ce contrat.
-                $contrat = $mutualiste->fonction->groupe->contrats[0];
+                $contrat = $mutualiste->fonction->groupe_mutualiste->contrats[0];
                 Adhesion::create([
                     'contrat_id' => $contrat->id,
                     'mutualiste_id' => $mutualiste->id,

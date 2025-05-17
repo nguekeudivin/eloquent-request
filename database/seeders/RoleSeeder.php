@@ -92,6 +92,7 @@ class RoleSeeder extends Seeder
             [
                 'name' => 'Gestion Mutualiste',
                 'code' => 'gestion_mutualiste',
+               // 'permissions' => [],
                 'description' => 'Ce rôle est attribué aux administrateurs ou employés de la mutuelle chargés de gérer le portefeuille des membres. Les responsabilités principales incluent l\'enregistrement de nouveaux mutualistes et de leurs ayants droit, la mise à jour de leurs informations personnelles et de contact, la gestion de leurs adhésions (création, modification, résiliation, suspension, réactivation), le suivi des cotisations dues et payées, la gestion des groupes mutualistes et des fonctions occupées par les membres. Les détenteurs de ce rôle peuvent également consulter l\'historique complet des interactions d\'un mutualiste avec la mutuelle (prises en charge, allocations, réclamations, conversations) pour fournir un support ou un suivi.',
                 'permissions' => array_merge(
                     total('mutualiste'),

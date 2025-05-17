@@ -33,7 +33,7 @@ class FonctionMutualiste extends Model
      ];
 
     // Relation vers le groupe mutualiste auquel cette fonction est rattachée
-    public function groupe(): BelongsTo
+    public function groupe_mutualiste(): BelongsTo
     {
         return $this->belongsTo(GroupeMutualiste::class, 'groupe_mutualiste_id');
     }

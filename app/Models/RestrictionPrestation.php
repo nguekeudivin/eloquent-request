@@ -47,7 +47,7 @@ class RestrictionPrestation extends Model
         return $this->belongsTo(Mutualiste::class, 'mutualiste_id');
     }
 
-    public function typePrestation(): BelongsTo
+    public function type_prestation(): BelongsTo
     {
         return $this->belongsTo(TypePrestation::class, 'type_prestation_id');
     }

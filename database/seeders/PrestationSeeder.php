@@ -11,7 +11,6 @@ use App\Models\TypePrestation;
 use App\Models\TypeAyantDroit;
 use App\Models\ModaliteRemboursement;
 use App\Models\Mutualiste;
-use App\Models\Prestation;
 use App\Models\Adhesion;
 use App\Models\PriseEnCharge;
 use App\Models\Remboursement;
@@ -22,7 +21,6 @@ class PrestationSeeder extends Seeder
     public function run(): void
     {
         DB::table('type_prestations')->delete();
-        DB::table('prestations')->delete();
         DB::table("modalite_remboursements")->delete();
         DB::table('prise_en_charges')->delete();
         DB::table("remboursements")->delete();
@@ -86,22 +84,11 @@ class PrestationSeeder extends Seeder
 
         // Selectionner 20 mutuaslites
         $mutualistes = Mutualiste::inRandomOrder()->take(20)->get();
-        $prestations = collect();
         $admin = User::where('username','super_admin')->first();
 
         foreach ($mutualistes as $mutualiste) {
             $typePrestation = $typesPrestation->random();
-
-            // Créer prestation
-            $prestation = Prestation::create([
-                'nom' => $faker->unique()->word(),
-                'description' => $faker->sentence(),
-                'code_interne' => strtoupper(Str::random(6)),
-                'montant_reference' => $faker->randomFloat(2, 5000, 50000),
-                'type_prestation_id' => $typePrestation->id,
-            ]);
-
-            $prestations->push($prestation);
+            $ayant_droit = $mutualiste->ayant_droits->random();
 
             // Créer une prise en charge pour cette prestation
 
@@ -116,7 +103,8 @@ class PrestationSeeder extends Seeder
                 'reference' => strtoupper(Str::random(10)),
                 'date_soins_facture' => now()->subDays(rand(1, 60)),
                 'mutualiste_id' => $mutualiste->id,
-                'prestation_id' => $prestation->id,
+                'type_prestation_id' => $typePrestation->id,
+                'ayant_droit_id' => $ayant_droit->id,
                 'adhesion_id' => $adhesion->id,
                 'montant_facture' => $faker->randomFloat(2, 5000, 100000),
                 'date_soumission' => now()->subDays(rand(1, 10)),

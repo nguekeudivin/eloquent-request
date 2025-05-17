@@ -21,6 +21,7 @@ class Contrat extends Model
         'date_debut_validite',
         'date_fin_validite',
         'montant_cotisation_base',
+        'montant_adhesion',
         'periode_cotisation',
         'est_actif',
     ];

@@ -22,6 +22,10 @@ class GroupeMutualisteController extends Controller
             ],
         ]);
 
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+       }
+
         $groupeMutualiste = GroupeMutualiste::create($validated);
 
         if (Auth::check()) {
@@ -45,6 +49,10 @@ class GroupeMutualisteController extends Controller
                 'nom' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('groupe_mutualistes', 'nom')->ignore($groupeMutualiste->id)], // Renommé de 'libelle' à 'nom'
             ],
         ]);
+
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+       }
 
         $groupeMutualiste->fill($validated);
 

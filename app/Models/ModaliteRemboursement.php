@@ -38,12 +38,12 @@ class ModaliteRemboursement extends Model
          'updated_at',
      ];
 
-    public function typePrestation(): BelongsTo
+    public function type_prestation(): BelongsTo
     {
         return $this->belongsTo(TypePrestation::class, 'type_prestation_id');
     }
 
-    public function typeAyantDroit(): BelongsTo
+    public function type_ayant_droit(): BelongsTo
     {
         return $this->belongsTo(TypeAyantDroit::class, 'type_ayant_droit_id');
     }

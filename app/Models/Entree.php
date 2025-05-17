@@ -54,7 +54,7 @@ class Entree extends Model
         return $this->belongsTo(Caisse::class, 'caisse_id');
     }
 
-    public function categorieEntree(): BelongsTo
+    public function categorie_entree(): BelongsTo
     {
         return $this->belongsTo(CategorieEntree::class, 'categorie_entree_id');
     }

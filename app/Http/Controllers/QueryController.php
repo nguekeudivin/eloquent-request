@@ -39,6 +39,7 @@ class QueryController extends Controller
             'groupe_mutualiste' => \App\Models\GroupeMutualiste::class,
             'fonction_mutualiste' => \App\Models\FonctionMutualiste::class,
             'type_ayant_droit' => \App\Models\TypeAyantDroit::class,
+            'type_allocation' => \App\Models\TypeAllocation::class,
             'ayant_droit' => \App\Models\AyantDroit::class,
             'adhesion' => \App\Models\Adhesion::class,
             'cotisation' => \App\Models\Cotisation::class,
@@ -54,13 +55,13 @@ class QueryController extends Controller
             'allocation' => \App\Models\Allocation::class,
             'restriction_prestation' => \App\Models\RestrictionPrestation::class,
             'type_prestation' => \App\Models\TypePrestation::class,
-            'prestation' => \App\Models\Prestation::class,
             'modalite_remboursement' => \App\Models\ModaliteRemboursement::class,
             'remboursement' => \App\Models\Remboursement::class,
             'reclamation' => \App\Models\Réclamation::class,
             'user_role' => \App\Models\UserRole::class,
             'role_permission' => \App\Models\RolePermission::class,
             'status_type' => \App\Models\StatusType::class,
+            'prise_en_charge' => \App\Models\PriseEnCharge::class
         ]);
 
         return response()->json($this->queryService->run($user));

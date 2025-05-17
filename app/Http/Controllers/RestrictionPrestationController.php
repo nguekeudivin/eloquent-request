@@ -33,12 +33,18 @@ class RestrictionPrestationController extends Controller
             ],
         ]);
 
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+       }
+
         $restrictionPrestation = RestrictionPrestation::create($validated);
 
         if (Auth::check()) {
              $restrictionPrestation->update(['created_by_user_id' => Auth::id()]);
              $restrictionPrestation->created_by_user_id = Auth::id();
         }
+
+        $restrictionPrestation->load('mutualiste','type_prestation');
 
         return response()->json(['message' => 'RestrictionPrestation créée avec succès.', 'data' => $restrictionPrestation], 201);
     }
@@ -66,6 +72,10 @@ class RestrictionPrestationController extends Controller
             ],
         ]);
 
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+       }
+
         $restrictionPrestation->fill($validated);
 
          if (Auth::check()) {
@@ -73,6 +83,8 @@ class RestrictionPrestationController extends Controller
          }
 
         $restrictionPrestation->save();
+
+        $restrictionPrestation->load('mutualiste','type_prestation');
 
         return response()->json(['message' => 'RestrictionPrestation mise à jour avec succès.', 'data' => $restrictionPrestation], 200);
     }

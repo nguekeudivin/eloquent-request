@@ -55,7 +55,8 @@ class Query
         }
 
         foreach ($requestQuery as $modelAlias => $queryDefinition) {
-            $modelSingulier = Str::singular($modelAlias);
+
+            $modelSingulier = french_singular(Str::replace('-','_',$modelAlias));
 
             $modelClass = $this->models[$modelSingulier] ?? null;
 

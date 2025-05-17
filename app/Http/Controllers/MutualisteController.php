@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule; // Pour valider l'ENUM sexe
 use App\Models\UserRole;
 use App\Models\Role;
+use App\Models\Adhesion;
 use App\Models\StatusType;
 use Faker\Factory as Faker;
 
@@ -26,12 +27,14 @@ class MutualisteController extends Controller
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
             'date_naissance' => 'required|date',
-            'lieu_naissance' => 'nullable|string|max:255',
-            'sexe' => ['nullable', Rule::in(['H', 'F', 'Autre'])], // Validation de l'ENUM
-            'adresse' => 'nullable|string',
-            'telephone' => 'nullable|string|max:255',
-            'profession' => 'nullable|string|max:255',
-            'date_premiere_adhesion' => 'required|date',
+            'lieu_naissance' => 'required|string|max:255',
+            'sexe' => ['required',Rule::in(['FEMININ', 'MASCULIN'])], // Validation de l'ENUM
+            'adresse' => 'string',
+            'telephone' => 'required|string|max:255',
+            'profession' => 'required|string|max:255',
+            "fonction_mutualiste_id" => "required|exists:fonction_mutualistes,id",
+            "contrat_id" => "required|exists:contrats,id",
+           // 'date_premiere_adhesion' => 'required|date',
             // Informations pour l'utilisateur
             'email' => 'required|string|max:255',
             'username' => 'required|string|unique:users,username',
@@ -52,6 +55,8 @@ class MutualisteController extends Controller
 
         $faker = Faker::create('fr_FR');
 
+        return $validated;
+
         // Data for Mutualiste model
         $mutualisteData = [
             'nom' => $validated['nom'],
@@ -62,7 +67,8 @@ class MutualisteController extends Controller
             'adresse' => $validated['adresse'],
             'telephone' => $validated['telephone'],
             'profession' => $validated['profession'],
-            'date_premiere_adhesion' => $validated['date_premiere_adhesion'],
+            'fonction_mutualiste_id' => $validated['fonction_mutualiste_id'],
+            'date_premiere_adhesion' => now(),
             'numero_adherent' => $faker->unique()->numerify('MUT-######'), // Numéro d'adhérent unique
         ];
 
@@ -98,6 +104,14 @@ class MutualisteController extends Controller
 
         $mutualiste = Mutualiste::create($mutualisteData);
 
+        // Enregistrer le contrat d'adhesion.
+        Adhesion::create([
+            'contrat_id' => $validated['contrat_id'],
+            'mutualiste_id' => $mutualiste->id,
+            'date_debut' => now(),
+            'statut' => 'ACTIF'
+        ]);
+
         DB::commit();
 
         return response()->json(['message' => 'Mutualiste créé avec succès.', 'data' => $mutualiste], 201);
@@ -111,12 +125,14 @@ class MutualisteController extends Controller
             'prenom' => 'string|max:255',
             'date_naissance' => 'date',
             'lieu_naissance' => 'nullable|string|max:255',
-            'sexe' => ['nullable', Rule::in(['H', 'F', 'Autre'])],
+            'sexe' => ['nullable', Rule::in(['MASCULIN', 'FEMININ'])],
             'adresse' => 'nullable|string',
             'telephone' => 'nullable|string|max:255',
             'profession' => 'nullable|string|max:255',
             'statut_social' => 'nullable|string|max:255',
             'date_premiere_adhesion' => 'date',
+            "contrat_id" => "exists:contrats,id",
+            "fonction_mutualiste_id" => "exists:fonction_mutualistes,id",
         ]);
 
         if ($validator->fails()) {
@@ -129,6 +145,8 @@ class MutualisteController extends Controller
             return response()->json(['message' => 'Mutualiste non trouvé.'], 404);
         }
 
+        DB::beginTransaction();
+
         $mutualiste->fill($validator->validated());
 
          if (Auth::check()) {
@@ -136,6 +154,19 @@ class MutualisteController extends Controller
          }
 
         $mutualiste->save();
+
+        $validated = $validator->validated();
+
+        if($request->has('contrat_id') && $validated['contrat_id'] != ''){
+            Adhesion::create([
+                'contrat_id' => $validated['contrat_id'],
+                'mutualiste_id' => $mutualiste->id,
+                'date_debut' => now(),
+                'statut' => 'ACTIF'
+            ]);
+        }
+
+        DB::commit();
 
         return response()->json(['message' => 'Mutualiste mis à jour avec succès.', 'data' => $mutualiste], 200);
     }

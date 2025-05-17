@@ -30,13 +30,14 @@ class PriseEnCharge extends Model
         'date_soins_facture',
         'mutualiste_id',
         'ayant_droit_id',
-        'prestation_id',
+        'type_prestation_id',
         'adhesion_id',
         'montant_facture',
         'montant_pris_en_charge',
         'date_soumission',
         'date_mise_a_jour_statut',
         'statut',
+        'hopital',
         'description',
         'soumise_par_user_id',
         'validee_par_admin_id',
@@ -74,14 +75,14 @@ class PriseEnCharge extends Model
         return $this->belongsTo(Mutualiste::class, 'mutualiste_id');
     }
 
-    public function ayantDroit(): BelongsTo
+    public function ayant_droit(): BelongsTo
     {
         return $this->belongsTo(AyantDroit::class, 'ayant_droit_id');
     }
 
-    public function prestation(): BelongsTo
+    public function type_prestation(): BelongsTo
     {
-        return $this->belongsTo(Prestation::class, 'prestation_id');
+        return $this->belongsTo(TypePrestation::class, 'type_prestation_id');
     }
 
     public function adhesion(): BelongsTo

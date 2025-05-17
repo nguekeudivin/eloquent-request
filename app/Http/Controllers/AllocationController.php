@@ -32,16 +32,17 @@ class AllocationController extends Controller
                 'montant' => ['required', 'decimal:0,2', 'min:0'], // Montant demandé/accordé
                 'motif' => ['required', 'string'],
                 // Statut initial est généralement 'accordée' lors de la création via cette API
-                'statut' => ['sometimes', 'required', 'string', Rule::in(['ACCORDEE','VERSEE','REFUSEE','ANNULEE'])],
-                 // verifiee_par_admin_id et versee_par_admin_id sont nullables à la création
-                 'verifiee_par_admin_id' => ['nullable', 'uuid', 'exists:users,id'],
-                 'versee_par_admin_id' => ['nullable', 'uuid', 'exists:users,id'],
             ],
         ]);
 
+
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+       }
+
         // Définir le statut par défaut à 'accordée' si non spécifié
          if (!isset($validated['statut'])) {
-             $validated['statut'] = 'accordée';
+             $validated['statut'] = 'ACCORDEE';
          }
 
         // Créer l'allocation en utilisant create()
@@ -56,6 +57,9 @@ class AllocationController extends Controller
              $allocation->created_by_user_id = Auth::id();
              $allocation->updated_by_user_id = Auth::id();
         }
+
+        $allocation->mutualiste;
+        $allocation->type_allocation;
 
         return response()->json(['message' => 'Allocation créée avec succès.', 'data' => $allocation], 201);
     }
@@ -82,11 +86,14 @@ class AllocationController extends Controller
                 'motif' => ['sometimes', 'required', 'string'],
                  // Permettre la mise à jour du statut via update si permis
                  'statut' => ['sometimes', 'required', 'string', Rule::in(['ACCORDEE','VERSEE','REFUSEE','ANNULEE'])],
-                 // Permettre la mise à jour des admins de vérification/versement si permis
-                 'verifiee_par_admin_id' => ['nullable', 'uuid', 'exists:users,id'],
-                 'versee_par_admin_id' => ['nullable', 'uuid', 'exists:users,id'],
             ],
         ]);
+
+
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+       }
+
 
         $allocation->fill($validated);
 
@@ -95,6 +102,9 @@ class AllocationController extends Controller
          }
 
         $allocation->save();
+
+        $allocation->mutualiste;
+        $allocation->type_allocation;
 
         return response()->json(['message' => 'Allocation mise à jour avec succès.', 'data' => $allocation], 200);
     }

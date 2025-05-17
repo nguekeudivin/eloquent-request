@@ -21,13 +21,12 @@ class CategorieEntreeController extends Controller
             'categorie_entree:create' => [
                 'libelle' => ['required', 'string', 'max:255', 'unique:categorie_entrees,libelle'],
                 'description' => ['nullable', 'string', 'max:255'],
-                'est_actif' => ['boolean'],
             ],
         ]);
 
-        if (!isset($validated['est_actif'])) {
-             $validated['est_actif'] = true;
-         }
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+        }
 
         $categorieEntree = CategorieEntree::create($validated);
 
@@ -52,7 +51,6 @@ class CategorieEntreeController extends Controller
             'categorie_entree:update' => [
                 'libelle' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('categorie_entrees', 'libelle')->ignore($categorieEntree->id)],
                 'description' => ['nullable', 'string', 'max:255'],
-                'est_actif' => ['sometimes', 'boolean'],
             ],
         ]);
 

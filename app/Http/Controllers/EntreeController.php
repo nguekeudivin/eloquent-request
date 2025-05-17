@@ -23,20 +23,25 @@ class EntreeController extends Controller
         // Permission: 'entree:create'
         $validated = $this->validateWithPermissions($request, [
             'entree:create' => [
-                'caisse_id' => ['required', 'integer', 'exists:caisses,id'],
+                'caisse_id' => ['required',  'exists:caisses,id'],
                 'categorie_entree_id' => ['required', 'integer', 'exists:categorie_entrees,id'],
                 'date_heure_mouvement' => ['required', 'date'],
                 'montant' => ['required', 'decimal:0,2', 'min:0.01'],
                 'source_motif' => ['required', 'string', 'max:255'],
-                'description' => ['nullable', 'text'],
+                'description' => ['nullable'],
                 'reference_externe' => ['nullable', 'string', 'max:255'],
                  // enregistre_par_admin_id doit être l'utilisateur authentifié ou spécifié si permis
-                 'enregistre_par_admin_id' => ['required', 'uuid', 'exists:users,id'], // Assurez-vous que cet user est bien un admin
+                 //'enregistre_par_admin_id' => ['required', 'uuid', 'exists:users,id'], // Assurez-vous que cet user est bien un admin
             ],
         ]);
 
+        if(isset($validated['errors'])){
+             return response()->json($validated, 422);
+        }
+
         // Définir la date d'enregistrement à maintenant
         $validated['date_enregistrement'] = now();
+        $validated['enregistre_par_admin_id'] = $request->user()->id;
 
         $entree = Entree::create($validated);
 
@@ -70,11 +75,15 @@ class EntreeController extends Controller
                 'date_heure_mouvement' => ['sometimes', 'required', 'date'],
                 'montant' => ['sometimes', 'required', 'decimal:0,2', 'min:0.01'],
                 'source_motif' => ['sometimes', 'required', 'string', 'max:255'],
-                'description' => ['nullable', 'text'],
+                'description' => ['nullable'],
                 'reference_externe' => ['nullable', 'string', 'max:255'],
-                 'enregistre_par_admin_id' => ['sometimes', 'required', 'uuid', 'exists:users,id'], // Assurez-vous que cet user est bien un admin
             ],
         ]);
+
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+       }
+
 
         $entree->fill($validated);
 

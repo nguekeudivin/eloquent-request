@@ -57,7 +57,7 @@ class Sortie extends Model
         return $this->belongsTo(Caisse::class, 'caisse_id');
     }
 
-    public function categorieSortie(): BelongsTo
+    public function categorie_sortie(): BelongsTo
     {
         return $this->belongsTo(CategorieSortie::class, 'categorie_sortie_id');
     }

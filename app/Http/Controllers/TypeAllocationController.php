@@ -26,6 +26,11 @@ class TypeAllocationController extends Controller
             ],
         ]);
 
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+        }
+
+
         $typeAllocation = TypeAllocation::create($validated);
 
         if (Auth::check()) {

@@ -26,6 +26,7 @@ class Mutualiste extends Model
         'telephone',
         'profession',
         'date_premiere_adhesion',
+        'fonction_mutualiste_id'
     ];
 
      protected $guarded = [
@@ -56,6 +57,10 @@ class Mutualiste extends Model
         return $this->belongsTo(User::class, 'id');
     }
 
+    public function ayant_droits(){
+        return $this->hasMany(AyantDroit::class);
+    }
+
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
@@ -69,6 +74,10 @@ class Mutualiste extends Model
     public function fonction(): BelongsTo
     {
         return $this->belongsTo(FonctionMutualiste::class, 'fonction_mutualiste_id');
+    }
+
+    public function adhesions(){
+        return $this->hasMany(Adhesion::class);
     }
 
 }

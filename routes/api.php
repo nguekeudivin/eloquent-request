@@ -51,6 +51,7 @@ Route::middleware('auth:sanctum')->group(function () use($endpoints){
     Route::resource('roles', RoleController::class)->only($endpoints);
     Route::resource('notifications', NotificationController::class)->only($endpoints);
     Route::resource('admins', AdminController::class)->only($endpoints);
+    Route::resource('adhesions', AdhesionController::class)->only($endpoints);
     Route::resource('mutualistes', MutualisteController::class)->only($endpoints);
     Route::resource('groupe-mutualistes', GroupeMutualisteController::class)->only($endpoints);
     Route::resource('contrats',ContratController::class)->only($endpoints);
@@ -64,15 +65,15 @@ Route::middleware('auth:sanctum')->group(function () use($endpoints){
     Route::resource('allocations', AllocationController::class)->only($endpoints);
     Route::resource('restriction-prestations', RestrictionPrestationController::class)->only($endpoints);
     Route::resource('type-prestations', TypePrestationController::class)->only($endpoints);
-    Route::resource('prestations', PrestationController::class)->only($endpoints);
     Route::resource('modalite-remboursements', ModaliteRemboursementController::class)->only($endpoints);
-    Route::resource('prises-en-charge', PriseEnChargeController::class)->only($endpoints);
+    Route::resource('prise-en-charges', PriseEnChargeController::class)->only($endpoints);
     Route::resource('remboursements', RemboursementController::class)->only($endpoints);
     Route::resource('reclamations', RéclamationController::class)->only($endpoints);
     Route::resource('conversations', ConversationController::class)->only($endpoints);
     Route::resource('messages', MessageController::class)->only($endpoints);
     Route::resource('cotisations', CotisationController::class)->only($endpoints);
     Route::resource('users', UserController::class)->only($endpoints);
+    Route::resource('type-ayant-droits', TypeAyantDroitController::class)->only($endpoints);
 
 
     Route::patch('/notifications/{userId}/read-all', [NotificationController::class,'readAll']);

@@ -61,7 +61,7 @@ class AllocationSeeder extends Seeder
         ];
 
         foreach ($mutualistes as $mutualiste) {
-            $groupe = optional(optional($mutualiste->fonction)->groupe)->id;
+            $groupe = optional(optional($mutualiste->fonction)->groupe_mutualiste)->id;
             if (!$groupe) continue;
 
             $type = $types->random();

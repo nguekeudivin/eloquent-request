@@ -6,6 +6,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Models\Permission;
 use App\Models\User;
+use App\Models\Adhesion;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -14,5 +15,11 @@ Artisan::command('inspire', function () {
 Artisan::command("demo", function(){
   //dump(Permission::pluck('name'));
 
-  dump(Permission::where('resource','conversation_participant')->get()->pluck('name'));
+  $modelSingulier = french_singular(Str::replace('-','_','user-models'));
+
+  foreach(Adhesion::all() as $item){
+    $item->update(['date_debut' => '2025-01-01']);
+  }
+
+
 });

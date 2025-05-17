@@ -21,17 +21,12 @@ class PriseEnChargeController extends Controller
 {
     use PermissionValidator;
 
-    // Opération 'soumettre(donnees, utilisateurId)' -> store
     public function store(Request $request)
     {
-        // Permission: 'prise_en_charge:create'
-        // e.g., Auth::user()->can('prise_en_charge:create')
-
         $validated = $this->validateWithPermissions($request, [
             'prise_en_charge:create' => [ // Permission pattern prefix
                 'date_soins_facture' => ['required', 'date', 'before_or_equal:today'], // Date des soins/facture ne peut pas être future
                 'mutualiste_id' => ['required', 'uuid', 'exists:users,id'],
-                // ayant_droit_id doit exister dans la table ayant_droits ET être lié au mutualiste_id fourni
                 'ayant_droit_id' => [
                     'nullable',
                     'uuid',
@@ -39,7 +34,8 @@ class PriseEnChargeController extends Controller
                         return $query->where('mutualiste_id', $request->mutualiste_id);
                     })
                 ],
-                'prestation_id' => ['required', 'integer', 'exists:prestations,id'],
+                'type_prestation_id' => ['required', 'integer', 'exists:type_prestations,id'],
+               // 'hopital' => ['required', Rule::in(['PUBLIC',"PRIVE"])],
                 // adhesion_id doit exister dans la table adhesions ET être lié au mutualiste_id fourni ET être active à la date des soins
                 'adhesion_id' => [
                     'required',
@@ -59,17 +55,17 @@ class PriseEnChargeController extends Controller
                     })
                 ],
                 'montant_facture' => ['required', 'decimal:0,2', 'min:0.01'],
-                // montant_pris_en_charge n'est généralement pas défini à la création
                  'montant_pris_en_charge' => ['nullable', 'decimal:0,2', 'min:0'],
-                 // Statut initial est généralement 'soumise'
-                 'statut' => ['sometimes', 'required', 'string', Rule::in(PriseEnCharge::STATUS)],
+                 'statut' => ['sometimes', 'required', 'string', Rule::in(['SOUMISE', 'EN COURS', 'VALIDEE', 'REMBOURSEE', 'REFUSEE', 'ANNULEE'])],
                  'description' => ['nullable', 'string'],
-                 // Qui soumet la demande (peut être le mutualiste authentifié ou un admin pour le mutualiste)
-                 'soumise_par_user_id' => ['required', 'uuid', 'exists:users,id'],
-                 // validee_par_admin_id est null à la création
-                 'validee_par_admin_id' => ['nullable', 'uuid', 'exists:users,id'],
+
             ],
         ]);
+
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+        }
+
 
         // Définir la référence unique si non fournie
          if (!isset($validated['reference'])) {
@@ -88,6 +84,7 @@ class PriseEnChargeController extends Controller
         // Définir les dates de soumission et mise à jour du statut à maintenant
         $validated['date_soumission'] = now();
         $validated['date_mise_a_jour_statut'] = now();
+        $validated['soumise_par_user_id'] = $request->user()->id;
 
         // Créer la prise en charge
         $priseEnCharge = PriseEnCharge::create($validated);
@@ -103,7 +100,6 @@ class PriseEnChargeController extends Controller
         } else {
              // Gérer le cas où aucun utilisateur n'est authentifié
         }
-
 
         return response()->json(['message' => 'Demande de prise en charge créée avec succès.', 'data' => $priseEnCharge], 201);
     }
@@ -135,29 +131,29 @@ class PriseEnChargeController extends Controller
                         return $query->where('mutualiste_id', $mutualisteId);
                     })
                 ],
-                'prestation_id' => ['sometimes', 'required', 'integer', 'exists:prestations,id'],
-                 // Validation de l'adhésion à la mise à jour si mutualiste_id ou adhesion_id est modifié
-                 'adhesion_id' => [
-                     'sometimes',
-                     'required',
-                     'uuid',
-                     Rule::exists('adhesions', 'id')->where(function ($query) use ($request, $priseEnCharge) {
-                         $mutualisteId = $request->has('mutualiste_id') ? $request->mutualiste_id : $priseEnCharge->mutualiste_id;
-                         $dateSoins = $request->has('date_soins_facture') ? $request->date_soins_facture : $priseEnCharge->date_soins_facture;
+                'adhesion_id' => [
+                    'sometimes',
+                    'required',
+                    'uuid',
+                    Rule::exists('adhesions', 'id')->where(function ($query) use ($request, $priseEnCharge) {
+                        $mutualisteId = $request->has('mutualiste_id') ? $request->mutualiste_id : $priseEnCharge->mutualiste_id;
+                        $dateSoins = $request->has('date_soins_facture') ? $request->date_soins_facture : $priseEnCharge->date_soins_facture;
 
-                         $query->where('mutualiste_id', $mutualisteId);
-                         $query->where('date_debut', '<=', $dateSoins)
-                               ->where(function ($query) use ($dateSoins) {
-                                   $query->whereNull('date_fin')
-                                         ->orWhere('date_fin', '>=', $dateSoins);
-                               });
-                     })
-                 ],
+                        $query->where('mutualiste_id', $mutualisteId);
+                        $query->where('date_debut', '<=', $dateSoins)
+                              ->where(function ($query) use ($dateSoins) {
+                                  $query->whereNull('date_fin')
+                                        ->orWhere('date_fin', '>=', $dateSoins);
+                              });
+                    })
+                ],
+                'type_prestation_id' => ['sometimes', 'required', 'integer', 'exists:type_prestations,id'],
+                 // Validation de l'adhésion à la mise à jour si mutualiste_id ou adhesion_id est modifié
                 'montant_facture' => ['sometimes', 'required', 'decimal:0,2', 'min:0.01'],
                  // montant_pris_en_charge peut être mis à jour via update si permis (mais souvent via valider)
                  'montant_pris_en_charge' => ['nullable', 'decimal:0,2', 'min:0'],
                  // Statut peut être mis à jour via update si permis (mais souvent via méthodes spécifiques)
-                 'statut' => ['sometimes', 'required', 'string', Rule::in(PriseEnCharge::STATUS)],
+                 'statut' => ['sometimes', 'required', 'string', Rule::in(['SOUMISE', 'EN COURS', 'VALIDEE', 'REMBOURSEE', 'REFUSEE', 'ANNULEE'])],
                  'description' => ['nullable', 'string'],
                  // soumise_par_user_id ne devrait généralement pas être mis à jour
                  // validee_par_admin_id peut être mis à jour via update si permis (mais souvent via valider/refuser)
@@ -165,11 +161,16 @@ class PriseEnChargeController extends Controller
             ],
         ]);
 
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+        }
+
+
+
         // Si le statut est mis à jour via cette méthode, mettre à jour date_mise_a_jour_statut
          if (isset($validated['statut']) && $validated['statut'] !== $priseEnCharge->statut) {
              $validated['date_mise_a_jour_statut'] = now();
          }
-
 
         $priseEnCharge->fill($validated);
 

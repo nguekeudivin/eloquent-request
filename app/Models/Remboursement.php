@@ -50,7 +50,7 @@ class Remboursement extends Model
          'updated_at',
      ];
 
-    public function priseEnCharge(): BelongsTo
+    public function prise_en_charge(): BelongsTo
     {
         return $this->belongsTo(PriseEnCharge::class, 'prise_en_charge_id');
     }

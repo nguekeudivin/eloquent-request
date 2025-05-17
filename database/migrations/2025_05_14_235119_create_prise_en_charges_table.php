@@ -18,9 +18,11 @@ return new class extends Migration
             $table->date('date_soins_facture'); // Date des soins ou de la facture
 
             $table->uuid('mutualiste_id'); // FK vers mutualistes (users)
-            $table->uuid('ayant_droit_id')->nullable(); // FK vers ayant_droits (Nullable)
-            $table->unsignedBigInteger('prestation_id'); // FK vers prestations (INT)
+            $table->uuid('ayant_droit_id'); // FK vers ayant_droits (Nullable)
+            $table->unsignedBigInteger('type_prestation_id'); // FK vers prestations (INT)
             $table->uuid('adhesion_id'); // FK vers adhesions (UUID)
+
+            $table->enum('hopital', ['PRIVE','PUBLIC']);
 
             $table->decimal('montant_facture', 10, 2); // Montant total de la facture
             $table->decimal('montant_pris_en_charge', 10, 2)->nullable(); // Montant calculé pris en charge (Nullable initialement)
@@ -46,8 +48,8 @@ return new class extends Migration
 
             // Définition des clés étrangères
             $table->foreign('mutualiste_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('ayant_droit_id')->references('id')->on('ayant_droits')->onDelete('set null');
-            $table->foreign('prestation_id')->references('id')->on('prestations')->onDelete('restrict'); // RESTRICT pour les tables lookup/référence
+            $table->foreign('ayant_droit_id')->references('id')->on('ayant_droits')->onDelete('cascade');
+            $table->foreign('type_prestation_id')->references('id')->on('type_prestations')->onDelete('restrict'); // RESTRICT pour les tables lookup/référence
             $table->foreign('adhesion_id')->references('id')->on('adhesions')->onDelete('restrict'); // RESTRICT si l'adhésion doit exister
             $table->foreign('soumise_par_user_id')->references('id')->on('users')->onDelete('restrict'); // RESTRICT si l'utilisateur soumetteur doit exister
             $table->foreign('validee_par_admin_id')->references('id')->on('users')->onDelete('set null');
@@ -58,7 +60,7 @@ return new class extends Migration
             $table->index('reference');
             $table->index('mutualiste_id');
             $table->index('ayant_droit_id');
-            $table->index('prestation_id');
+            $table->index('type_prestation_id');
             $table->index('adhesion_id');
             $table->index('statut');
             $table->index('date_soins_facture');

@@ -18,9 +18,12 @@ class GroupeContrat extends Pivot
         'contrat_id' => 'string',
     ];
 
-    protected $guarded = [
+    protected $fillable = [
         'groupe_id',
         'contrat_id',
+    ];
+
+    protected $guarded = [
         'created_by_user_id',
         'updated_by_user_id',
         'created_at',
