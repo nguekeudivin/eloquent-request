@@ -48,7 +48,7 @@ class AyantDroit extends Model
      ];
 
     // Relation vers le type d'ayant droit
-    public function type(): BelongsTo
+    public function type_ayant_droit(): BelongsTo
     {
         return $this->belongsTo(TypeAyantDroit::class, 'type_ayant_droit_id');
     }

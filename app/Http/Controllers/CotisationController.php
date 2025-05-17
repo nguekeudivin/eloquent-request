@@ -10,11 +10,28 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\Rule;
 use App\Models\Adhesion; // Pour validation exists
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 
 class CotisationController extends Controller
 {
     use PermissionValidator;
+
+    public function mutualisteCotisations(Request $request){
+
+        $cotisations = DB::table('cotisations')
+        ->join('adhesions', 'cotisations.adhesion_id', '=', 'adhesions.id')
+        ->where('adhesions.mutualiste_id', $request->id)
+        ->select(
+            'cotisations.*',
+            'adhesions.contrat_id',
+            'adhesions.statut as statut_adhesion'
+        )
+        ->orderBy('cotisations.date_limite_paiement', 'desc')
+        ->get();
+
+        return response()->json($cotisations);
+    }
 
     // Opération 'generer(adhesionId, periode, montant, dateLimite)' -> store (simplifié ici)
     // Note: La logique de génération complète est souvent dans Adhesion::genererCotisations()

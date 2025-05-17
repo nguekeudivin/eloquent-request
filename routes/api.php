@@ -47,6 +47,8 @@ Route::middleware('auth:sanctum')->group(function () use($endpoints){
 
     Route::post('query',[QueryController::class,'index']);
 
+    Route::get('/mutualistes/{id}/cotisations',[CotisationController::class,"mutualisteCotisations"]);
+
     Route::resource('status-types', StatusTypeController::class)->only($endpoints);
     Route::resource('roles', RoleController::class)->only($endpoints);
     Route::resource('notifications', NotificationController::class)->only($endpoints);

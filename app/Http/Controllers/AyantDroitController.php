@@ -27,11 +27,16 @@ class AyantDroitController extends Controller
                 'nom' => ['required', 'string', 'max:255'],
                 'prenom' => ['required', 'string', 'max:255'],
                 'date_naissance' => ['required', 'date'],
-                'sexe' => ['required', 'string', Rule::in(['masculin', 'feminin'])],
+                'sexe' => ['required', 'string', Rule::in(['MASCULIN', 'FEMININ'])],
                 // est_actif par défaut à true, peut être omis ou validé si permis
                  'est_actif' => ['boolean'],
             ],
         ]);
+
+
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+        }
 
         // Créer l'ayant droit en utilisant create()
         $ayantDroit = AyantDroit::create($validated);
@@ -41,6 +46,8 @@ class AyantDroitController extends Controller
              $ayantDroit->update(['created_by_user_id' => Auth::id()]);
              $ayantDroit->created_by_user_id = Auth::id();
         }
+
+        $ayantDroit->load('type_ayant_droit');
 
         return response()->json(['message' => 'AyantDroit créé avec succès.', 'data' => $ayantDroit], 201);
     }
@@ -62,10 +69,14 @@ class AyantDroitController extends Controller
                 'nom' => ['sometimes', 'required', 'string', 'max:255'],
                 'prenom' => ['sometimes', 'required', 'string', 'max:255'],
                 'date_naissance' => ['sometimes', 'required', 'date'],
-                'sexe' => ['sometimes', 'required', 'string', Rule::in(['masculin', 'feminin'])],
+                'sexe' => ['sometimes', 'required', 'string', Rule::in(['MASCULIN', 'FEMININ'])],
                 'est_actif' => ['sometimes', 'boolean'],
             ],
         ]);
+
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+        }
 
         $ayantDroit->fill($validated);
 
@@ -74,6 +85,8 @@ class AyantDroitController extends Controller
          }
 
         $ayantDroit->save();
+
+        $ayantDroit->load('type_ayant_droit');
 
         return response()->json(['message' => 'AyantDroit mis à jour avec succès.', 'data' => $ayantDroit], 200);
     }

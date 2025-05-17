@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Permission;
 use App\Models\User;
 use App\Models\Adhesion;
+use App\Models\Cotisation;
+use App\Models\PriseEnCharge;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -22,4 +24,7 @@ Artisan::command("demo", function(){
   }
 
 
+  $items = PriseEnCharge::where('mutualiste_id',"0196db4a-0158-7316-ae5f-0d5e9aff672d")->get();
+
+  dump($items);
 });

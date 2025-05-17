@@ -1,7 +1,21 @@
-[
-    {
-        "caisses": {
-            "select": ["*"]
-        }
+{
+    "prise-en-charges": {
+        "clauses": [
+            {
+                "name": "where",
+                "value": [
+                    "mutualiste_id",
+                    "=",
+                    "0196db4a-0158-7316-ae5f-0d5e9aff672d"
+                ]
+            }
+        ],
+        "select": ["*"],
+        "rels": {
+            "mutualiste": { "select": ["id", "nom", "prenom"] },
+            "ayant_droit": { "select": ["id", "nom", "prenom"] },
+            "type_prestation": { "select": ["id", "libelle"] }
+        },
+        "paginate": [1, 10]
     }
-]
+}

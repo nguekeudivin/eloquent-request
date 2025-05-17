@@ -101,6 +101,8 @@ class PriseEnChargeController extends Controller
              // Gérer le cas où aucun utilisateur n'est authentifié
         }
 
+        $priseEnCharge->load('mutualiste','ayant_droit','type_prestation');
+
         return response()->json(['message' => 'Demande de prise en charge créée avec succès.', 'data' => $priseEnCharge], 201);
     }
 
@@ -179,6 +181,8 @@ class PriseEnChargeController extends Controller
          }
 
         $priseEnCharge->save();
+
+        $priseEnCharge->load('mutualiste','ayant_droit','type_prestation');
 
         return response()->json(['message' => 'Demande de prise en charge mise à jour avec succès.', 'data' => $priseEnCharge], 200);
     }
