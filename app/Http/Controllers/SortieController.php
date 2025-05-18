@@ -53,6 +53,8 @@ class SortieController extends Controller
              $sortie->updated_by_user_id = Auth::id();
         }
 
+        $sortie->load('caisse','categorie_sortie');
+
         return response()->json(['message' => 'Sortie enregistrée avec succès.', 'data' => $sortie], 201);
     }
 
@@ -90,6 +92,9 @@ class SortieController extends Controller
          }
 
         $sortie->save();
+
+        $sortie->load('caisse','categorie_sortie');
+
 
         return response()->json(['message' => 'Sortie mise à jour avec succès.', 'data' => $sortie], 200);
     }

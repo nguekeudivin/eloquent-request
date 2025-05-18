@@ -118,6 +118,8 @@ class CotisationController extends Controller
 
         $cotisation->save();
 
+        $cotisation->load('adhesion.mutualiste');
+
         return response()->json(['message' => 'Cotisation mise à jour avec succès.', 'data' => $cotisation], 200);
     }
 

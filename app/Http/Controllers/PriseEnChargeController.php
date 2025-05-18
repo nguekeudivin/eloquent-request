@@ -35,7 +35,7 @@ class PriseEnChargeController extends Controller
                     })
                 ],
                 'type_prestation_id' => ['required', 'integer', 'exists:type_prestations,id'],
-               // 'hopital' => ['required', Rule::in(['PUBLIC',"PRIVE"])],
+                'hopital' => ['required', Rule::in(['PUBLIC',"PRIVE"])],
                 // adhesion_id doit exister dans la table adhesions ET être lié au mutualiste_id fourni ET être active à la date des soins
                 'adhesion_id' => [
                     'required',

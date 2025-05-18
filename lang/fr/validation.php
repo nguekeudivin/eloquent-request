@@ -179,7 +179,9 @@ return [
         'attribute-name' => [
             'rule-name' => 'message-personnalisé',
         ],
-
+        'prise_en_charge_id' => [
+            'unique:remboursements,prise_en_charge_id' => "Un remboursement a déjà été éffectué pour cette prise en charge"
+        ]
     ],
 
     /*

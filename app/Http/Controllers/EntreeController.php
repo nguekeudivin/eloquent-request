@@ -54,6 +54,8 @@ class EntreeController extends Controller
              $entree->updated_by_user_id = Auth::id();
         }
 
+        $entree->load('caisse','categorie_entree');
+
         return response()->json(['message' => 'Entrée enregistrée avec succès.', 'data' => $entree], 201);
     }
 
@@ -92,6 +94,8 @@ class EntreeController extends Controller
          }
 
         $entree->save();
+        $entree->load('caisse','categorie_entree');
+
 
         return response()->json(['message' => 'Entrée mise à jour avec succès.', 'data' => $entree], 200);
     }

@@ -106,6 +106,7 @@ class PrestationSeeder extends Seeder
                 'type_prestation_id' => $typePrestation->id,
                 'ayant_droit_id' => $ayant_droit->id,
                 'adhesion_id' => $adhesion->id,
+                'hopital' => $faker->randomElement(['PUBLIC','PRIVE']),
                 'montant_facture' => $faker->randomFloat(2, 5000, 100000),
                 'date_soumission' => now()->subDays(rand(1, 10)),
                 'date_mise_a_jour_statut' => now(),

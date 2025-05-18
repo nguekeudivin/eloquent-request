@@ -131,7 +131,7 @@ class MutualisteController extends Controller
             'profession' => 'nullable|string|max:255',
             'statut_social' => 'nullable|string|max:255',
             'date_premiere_adhesion' => 'date',
-            "contrat_id" => "exists:contrats,id",
+            "contrat_id" => "nullable|exists:contrats,id",
             "fonction_mutualiste_id" => "exists:fonction_mutualistes,id",
         ]);
 

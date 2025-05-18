@@ -71,7 +71,7 @@ class Mutualiste extends Model
         return $this->belongsTo(User::class, 'updated_by_user_id');
     }
 
-    public function fonction(): BelongsTo
+    public function fonction_mutualiste(): BelongsTo
     {
         return $this->belongsTo(FonctionMutualiste::class, 'fonction_mutualiste_id');
     }

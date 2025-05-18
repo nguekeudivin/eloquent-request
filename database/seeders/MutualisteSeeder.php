@@ -89,7 +89,7 @@ class MutualisteSeeder extends Seeder
                 );
 
                 // Rechercher un contrat d'adhesion et l'entregistre sous ce contrat.
-                $contrat = $mutualiste->fonction->groupe_mutualiste->contrats[0];
+                $contrat = $mutualiste->fonction_mutualiste->groupe_mutualiste->contrats[0];
                 Adhesion::create([
                     'contrat_id' => $contrat->id,
                     'mutualiste_id' => $mutualiste->id,

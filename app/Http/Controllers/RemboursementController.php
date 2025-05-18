@@ -26,25 +26,34 @@ class RemboursementController extends Controller
                 'prise_en_charge_id' => [
                     'required',
                     'uuid',
-                    Rule::exists('prise_en_charges', 'id')->where(function ($query) {
-                         $query->where('statut', 'validée');
-                         $query->doesntHave('remboursement');
-                    })
                 ],
-                'modalite_remboursement_id' => ['required', 'integer', 'exists:modalite_remboursements,id'],
+               // 'modalite_remboursement_id' => ['required', 'integer', 'exists:modalite_remboursements,id'],
                 'date_paiement' => ['required', 'date', 'before_or_equal:today'],
                 'montant_paye' => ['required', 'decimal:0,2', 'min:0.01'],
                 'mode_paiement' => ['required', 'string', Rule::in(['VIREMENT BANCAIRE', 'CHEQUE', 'ESPECES CAISSE']
                 )],
                 'reference_transaction' => ['nullable', 'string', 'max:255'],
-                'paye_par_admin_id' => ['required', 'uuid', 'exists:users,id'],
             ],
         ]);
+
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+        }
+
+        // Rechercher la modalite de remboursement.
+        $remboursement = Remboursement::where('prise_en_charge_id',$validated['prise_en_charge_id'])->first();
+        if($remboursement != null) {
+            return response()->json(['message' => 'Un remboursement a déjà été éffectué pour cette prise en charge'], 422);
+        }
+
 
         $priseEnCharge = PriseEnCharge::find($validated['prise_en_charge_id']);
         if ($priseEnCharge && $validated['montant_paye'] != $priseEnCharge->montant_pris_en_charge) {
              $validated['montant_paye'] = $priseEnCharge->montant_pris_en_charge;
         }
+
+        $validated['montant_paye'] = $request->montant_paye;
+        $validated['paye_par_admin_id'] = $request->user()->id;
 
         $remboursement = Remboursement::create($validated);
 

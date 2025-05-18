@@ -21,9 +21,14 @@ class CategorieSortieController extends Controller
             'categorie_sortie:create' => [
                 'libelle' => ['required', 'string', 'max:255', 'unique:categorie_sorties,libelle'],
                 'description' => ['nullable', 'string', 'max:255'],
-                'est_active' => ['boolean'],
+               // 'est_active' => ['boolean'],
             ],
         ]);
+
+
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+        }
 
          if (!isset($validated['est_active'])) {
              $validated['est_active'] = true;
@@ -55,6 +60,11 @@ class CategorieSortieController extends Controller
                 'est_active' => ['sometimes', 'boolean'],
             ],
         ]);
+
+
+        if(isset($validated['errors'])){
+            return response()->json($validated, 422);
+        }
 
         $categorieSortie->fill($validated);
 
