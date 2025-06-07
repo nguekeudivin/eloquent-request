@@ -7,24 +7,24 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Post extends Model
 {
+    protected $guarded = [];
 
-    protected $fillable = [
-        "title",
-        "slug",
-        "body",
-        "is_publised"
-    ];
+    public function author()
+    {
+        return $this->belongsTo(User::class);
+    }
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 
-    public static function queryFilters(): array
+    public static function queryFilters()
     {
         return [
-            'owner' => function (Builder $query, $user) {
-                $query->where('user_id', $user->id);
-            },
-            'published' => function (Builder $query, $user) {
-                $query->where('is_published', false);
-            },
+            'mine' => function (Builder $query, $user) {
+                $query->where('user_id', $user->id)->where('id', '<', 3)->get();
+            }
         ];
     }
 }

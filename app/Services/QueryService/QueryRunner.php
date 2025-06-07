@@ -17,7 +17,8 @@ class QueryRunner
         $this->request = $request;
     }
 
-    public function setUser($user){
+    public function setUser($user)
+    {
         $this->user = $user;
     }
 
@@ -27,14 +28,14 @@ class QueryRunner
         $user = $this->user; // Definir le user.
 
         // Appliquer les filtres de requête si présents
-        if (isset($queryDefinition->appliedListFilters) && is_array($queryDefinition->appliedListFilters)) {
+        if (isset($queryDefinition->filters) && is_array($queryDefinition->filters)) {
             $modelClass = $eloquentQuery->getModel()::class;
             // Appeler la méthode statique pour obtenir le tableau des filtres
             $modelFilters = $modelClass::queryFilters() ?? [];
 
             $eloquentQuery->where(function (Builder $query) use ($queryDefinition, $modelFilters, $user) {
                 $first = true;
-                foreach ($queryDefinition->appliedListFilters as $filterName) {
+                foreach ($queryDefinition->filters as $filterName) {
                     if (isset($modelFilters[$filterName]) && is_callable($modelFilters[$filterName])) {
                         if (!$first) {
                             $query->orWhere(function (Builder $q) use ($modelFilters, $filterName) {

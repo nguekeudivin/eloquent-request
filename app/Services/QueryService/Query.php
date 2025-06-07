@@ -4,91 +4,110 @@ namespace App\Services\QueryService;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Services\Helpers;
 
 class Query
 {
     protected $request;
-    protected $permissionEvaluator;
-    protected $eloquentQueryBuilder;
-    protected $queryRunner;
+    protected $guard;
+    protected $builder;
+    protected $runner;
     protected $models = [
         "user" => \App\Models\User::class,
     ];
 
     public function __construct(
-        PermissionEvaluator $permissionEvaluator,
-        EloquentQueryBuilder $eloquentQueryBuilder,
-        QueryRunner $queryRunner,
+        PermissionGuard $guard,
+        EloquentQueryBuilder $builder,
+        QueryRunner $runner,
         Request $request
     ) {
-        $this->permissionEvaluator = $permissionEvaluator;
-        $this->eloquentQueryBuilder = $eloquentQueryBuilder;
-        $this->queryRunner = $queryRunner;
+        $this->guard = $guard;
+        $this->builder = $builder;
+        $this->runner = $runner;
         $this->request = $request;
     }
 
-    public function setModels($models){
+    public function setModels($models)
+    {
         $this->models = $models;
     }
 
-    public function run($user)
+    public function run($user, $withPermissions = true)
     {
         // check user
-        if($user == null){
+        if ($user == null) {
             return [];
         }
 
         // Set the use permissions
         $userPermissions = $user->getPermissions();
 
+        $userPermissions = [
+            'Post:list',
+            'Post:view:title'
+        ];
+
         // Parse the query
         $requestQuery = (array) json_decode($this->request->input("query"), true);
         $finalResult = [];
 
         // Define need informations
-        $this->permissionEvaluator->setModels($this->models);
-        $this->eloquentQueryBuilder->setUser($user);
-        $this->queryRunner->setUser($user);
+        $this->guard->setPermissions($userPermissions);
+        $this->builder->setUser($user);
+        $this->runner->setUser($user);
 
+        // We check is the request is well define.
         if (!is_array($requestQuery)) {
-            return []; // Ou lancer une exception
+            return []; // Or raise an exception.
         }
 
-        foreach ($requestQuery as $modelAlias => $queryDefinition) {
 
-            $modelSingulier = french_singular(Str::replace('-','_',$modelAlias));
+        foreach ($requestQuery as $index => $modelQuery) {
 
-            $modelClass = $this->models[$modelSingulier] ?? null;
-
-            if (!$modelClass) {
-                continue; // Ou lancer une exception
+            // If the query definition is null we continue.
+            if (empty((array) $modelQuery)) {
+                continue;
             }
 
-            if ($this->permissionEvaluator->hasModelAccess($modelSingulier, (object) $queryDefinition, $userPermissions)) {
+            $model = Str::singular(Str::studly($index));
+            $modelClass = Helpers::getModelClass($model);
 
-                $filteredDefinition = $this->permissionEvaluator->filterModelQueryBasNiveau($modelSingulier, (object) $queryDefinition, $userPermissions);
+            if (!$modelClass) {
+                continue; // Or raise an exception.
+            }
 
-                if (!$this->permissionEvaluator->canListModel($modelSingulier, $userPermissions)) {
+            // Init the new query before checking the permissions.
+            $newQuery = $modelQuery;
 
-                    $appliedFilters = $this->permissionEvaluator->getApplicableListFilters($modelSingulier, $userPermissions, $modelClass);
+            if ($withPermissions) {
+                $hasAccess = false; // by default we assume the user can list model instance
 
-                    if (!empty($appliedFilters)) {
-                        $filteredDefinition->appliedListFilters = $appliedFilters;
-                    } else {
-                        continue; // L'utilisateur n'a pas la permission de lister ni de filtrer
+                // If the user can list the model then he have access.
+                if ($this->guard->can('list', $model)) {
+                    $hasAccess = true;
+                };
+
+                // Look for access under filters conditions
+                $filters = [];
+                if (!$hasAccess) {
+                    $filters = $this->guard->getFilters($model);
+                    if (empty($filters)) {
+                        continue;
                     }
                 }
 
-                // Il n'ya pas de select donc aucune information a recupere.
-                // Generelement ce scenario se produit quand l'utilisateur n'a pas les permission sur les attributs.
-                if(!isset($filteredDefinition->select)){
+                $newQuery = $this->guard->parseQuery($model, (object) $modelQuery);
+                $newQuery->filters = $filters;
+
+                if (!isset($newQuery->select)) {
                     continue;
                 }
-
-                $eloquentQuery = $this->eloquentQueryBuilder->build($modelClass, (object) $filteredDefinition);
-
-                $finalResult[$modelAlias] = $this->queryRunner->run($eloquentQuery, (object) $filteredDefinition);
             }
+
+            $eloquentQuery = $this->builder->build($modelClass, (object) $newQuery);
+            $finalResult[$index] = $this->runner->run($eloquentQuery, (object) $newQuery);
+
         }
 
         return $finalResult;

@@ -10,7 +10,8 @@ class EloquentQueryBuilder
 {
     protected $user = null;
 
-    public function setUser($user){
+    public function setUser($user)
+    {
         $this->user = $user;
     }
 
@@ -88,7 +89,7 @@ class EloquentQueryBuilder
 
         foreach ((array) $rels as $relationName => $definition) {
 
-            $with[$relationName] = function ($relation) use ($relationName,$definition, $user) {
+            $with[$relationName] = function ($relation) use ($relationName, $definition, $user) {
 
                 $query = $relation->getQuery();
 
@@ -118,21 +119,24 @@ class EloquentQueryBuilder
                 }
 
                 //Appliquer les filtres de requete si presents
-                if(isset($definition->appliedRelationFilters) && is_array($definition->appliedRelationFilters)){
+                if (isset($definition->filters) && is_array($definition->filters)) {
 
                     $modelClass = $query->getModel()::class;
                     $filters = $modelClass::queryFilters() ?? [];
 
-                    $query->where( function(Builder $someQuery) use ($definition, $filters, $user) {
+                    $query->where(function (Builder $someQuery) use ($definition, $filters, $user) {
+                        // The operation that is apply for filters is the UNION so we need to chain the filters by a "orWhere" operator.
+                        // So the filter is call directy. The implementation of the filter inside the model may call a "Where" operator on him.
+                        // And the other are wrapped inside a orWhere operator.
+                        // Hence we are sure to apply the UNION.
                         $first = true;
-                        foreach($definition->appliedRelationFilters as $filterName){
-
-                            if(isset($filters[$filterName]) && is_callable($filters[$filterName])){
-                                if(!$first){
+                        foreach ($definition->filters as $filterName) {
+                            if (isset($filters[$filterName]) && is_callable($filters[$filterName])) {
+                                if (!$first) {
                                     $someQuery->orWhere(function (Builder $q) use ($filters, $filterName, $user) {
                                         $filters[$filterName]($q, $user);
                                     });
-                                }else{
+                                } else {
                                     $filters[$filterName]($someQuery, $user);
                                     $first = false;
                                 }
@@ -155,7 +159,7 @@ class EloquentQueryBuilder
     /**
      * Automatically adds required keys for any relationship type
      */
-    protected function ensureRelationshipKeys( $relation, Builder $query): void
+    protected function ensureRelationshipKeys($relation, Builder $query): void
     {
         $requiredKeys = $this->getRequiredKeysForRelation($relation);
 
@@ -171,7 +175,7 @@ class EloquentQueryBuilder
     /**
      * Gets required keys for all relationship types
      */
-    protected function getRequiredKeysForRelation( $relation): array
+    protected function getRequiredKeysForRelation($relation): array
     {
         $keys = [$relation->getRelated()->getQualifiedKeyName()];
 

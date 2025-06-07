@@ -1,7 +1,5 @@
 {
-    "mutualistes": {
-        "rels": { "fonction_mutualiste": { "select": ["id", "libelle"] } },
-        "select": ["*"],
-        "paginate": [1, 10]
+    "posts": {
+        "select": ["email"]
     }
 }

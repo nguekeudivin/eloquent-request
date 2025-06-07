@@ -10,11 +10,10 @@ use App\Models\User;
 
 class AuthController extends Controller
 {
-
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string',
+            'email' => 'required|string',
             'password' => 'required|string',
         ]);
 
@@ -23,32 +22,30 @@ class AuthController extends Controller
         }
 
         // Trouver l'utilisateur manuellement par username
-        $user = User::where('username', $request->username)->first();
+        $user = User::where('email', $request->email)->first();
 
         // Vérifier si l'utilisateur existe ET si le mot de passe fourni correspond au haché
         if (! $user || ! Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Identifiants invalides'], 401);
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
         // Authentification réussie (validation manuelle passée)
-        $user->load('admin', 'mutualiste');
+        $user->load('admin');
 
         // Déterminer le type d'utilisateur
         $userType = null; // Type par défaut
 
         if ($user->admin !== null) {
             $userType = 'admin';
-        } elseif ($user->mutualiste !== null) {
-            $userType = 'mutualiste';
         }
+
         // Générer un nouveau token Sanctum pour cet utilisateur
         $token = $user->createToken('api-token')->plainTextToken;
 
-       // $user->permissions = $user->getPermissions();
+        // $user->permissions = $user->getPermissions();
 
         // Retourner les détails de l'utilisateur et le token
         return response()->json([
-            'message' => 'Connexion réussie',
             'user' => $user,
             'user_type' => $userType,
             'token' => $token,

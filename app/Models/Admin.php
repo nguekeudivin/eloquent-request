@@ -10,23 +10,14 @@ class Admin extends Model
 {
     use HasFactory;
 
-    protected $table = 'admins';
-    protected $primaryKey = 'id';
-    protected $keyType = 'string';
-    public $incrementing = false;
-
     protected $fillable = [
         'id',
-        'nom',
-        'prenom',
-        'service',
+        'name'
     ];
 
-     protected $guarded = [
-        'created_at',
-        'updated_at',
-        'created_by_user_id',
-        'updated_by_user_id',
+    protected $guarded = [
+       'created_at',
+       'updated_at',
     ];
 
     protected $casts = [
@@ -39,13 +30,4 @@ class Admin extends Model
         return $this->belongsTo(User::class, 'id');
     }
 
-    public function createdBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id');
-    }
-
-    public function updatedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by_user_id');
-    }
 }

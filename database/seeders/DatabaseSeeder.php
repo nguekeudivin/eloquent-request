@@ -12,21 +12,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-       $this->call([
+        $this->call([
             PermissionSeeder::class,
             RoleSeeder::class,
-            StatusTypeSeeder::class,
-            TypeAyantDroitSeeder::class,
+            UserSeeder::class,
             AdminSeeder::class,
-            ContratSeeder::class,
-            MutualisteSeeder::class,
-            NotificationSeeder::class,
-            CotisationSeeder::class,
-            AyantDroitSeeder::class,
-            AllocationSeeder::class,
-            PrestationSeeder::class,
-            ReclamationSeeder::class,
-            FinanceSeeder::class,
-       ]);
+            PostSeeder::class
+        ]);
     }
 }

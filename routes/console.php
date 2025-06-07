@@ -7,24 +7,27 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Permission;
 use App\Models\User;
 use App\Models\Adhesion;
-use App\Models\Cotisation;
-use App\Models\PriseEnCharge;
+use App\Services\Helpers;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Arr;
+
+class MyClass
+{
+    public function sayHello($name)
+    {
+        return "Hello, $name!";
+    }
+}
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Artisan::command("demo", function(){
-  //dump(Permission::pluck('name'));
+Artisan::command("demo", function () {
 
-  $modelSingulier = french_singular(Str::replace('-','_','user-models'));
+    $modelClass = 'App\Models\User';
 
-  foreach(Adhesion::all() as $item){
-    $item->update(['date_debut' => '2025-01-01']);
-  }
+    $user = new $modelClass();
 
-
-  $items = PriseEnCharge::where('mutualiste_id',"0196db4a-0158-7316-ae5f-0d5e9aff672d")->get();
-
-  dump($items);
+    dd($user->rels);
 });
