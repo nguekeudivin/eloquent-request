@@ -25,6 +25,8 @@ class Admin extends Model
         'updated_at' => 'datetime',
     ];
 
+    public $rels = ["user"];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'id');

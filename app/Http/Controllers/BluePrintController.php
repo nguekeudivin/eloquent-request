@@ -7,8 +7,6 @@ use Illuminate\Http\Request;
 
 class BluePrintController extends Controller
 {
-    use PermissionValidator; // Le trait pour gérer la validation par permission
-
     public function store(Request $request)
     {
         // Validation en fonction des permissions
@@ -17,7 +15,7 @@ class BluePrintController extends Controller
                 'email' => ['required', 'email'],
                 'password' => ['required', 'string', 'min:8'],
             ],
-            '#' => [
+            'meta' => [
                 'ref_code' => ['nullable', 'string'],
                 'send_email' => ['boolean'],
             ],

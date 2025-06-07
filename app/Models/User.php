@@ -63,24 +63,18 @@ class User extends Authenticatable
     }
 
 
-    // Define the relationship to roles via the user_role pivot table
     public function roles(): BelongsToMany
     {
-        // role_id is integer, user_id is string (UUID)
         return $this->belongsToMany(Role::class, 'user_role', 'user_id', 'role_id')
             ->using(UserRole::class)
             ->withTimestamps();
     }
 
-    // Method to get all permissions through roles
     public function getPermissions()
     {
-        // Load roles and their permissions if not already loaded to avoid N+1 issues
         if (! $this->relationLoaded('roles') || $this->roles->isEmpty() || ! $this->roles->every(fn ($role) => $role->relationLoaded('permissions'))) {
             $this->load('roles.permissions');
         }
-
-        // Pluck permissions from all roles, flatten the collection of collections, and get unique permissions
         return $this->roles->pluck('permissions')->flatten()->unique('id')->pluck('name')->toArray(); // Use unique('id') to compare by permission ID
     }
 

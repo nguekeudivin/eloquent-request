@@ -28,11 +28,6 @@ class Query
         $this->request = $request;
     }
 
-    public function setModels($models)
-    {
-        $this->models = $models;
-    }
-
     public function run($user, $withPermissions = true)
     {
         // check user
