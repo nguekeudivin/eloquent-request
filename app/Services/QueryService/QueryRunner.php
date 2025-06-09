@@ -71,6 +71,11 @@ class QueryRunner
             // }
         }
 
+        if (property_exists($queryDefinition, "groupBy")) {
+
+            return $eloquentQuery->get()->groupBy($queryDefinition->groupBy);
+        }
+
         // Retourner tous les résultats si ni la pagination ni la limite ne sont spécifiées
         return $eloquentQuery->get();
     }

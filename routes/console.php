@@ -4,12 +4,12 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
-use App\Models\Permission;
-use App\Models\User;
-use App\Models\Adhesion;
 use App\Services\Helpers;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
+use App\Models\Permission;
+use App\Models\User;
+use App\Models\Post;
 
 class MyClass
 {
@@ -25,9 +25,11 @@ Artisan::command('inspire', function () {
 
 Artisan::command("demo", function () {
 
-    $modelClass = 'App\Models\User';
+    $query = Post::select('user_id', 'title')->get()->groupBy('user_id');
 
-    $user = new $modelClass();
+    // $query->get();
 
-    dd($user->rels);
+    // $query->groupBy("user_id");
+
+    dump($query->toArray());
 });

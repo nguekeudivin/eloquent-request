@@ -28,6 +28,19 @@ class Query
         $this->request = $request;
     }
 
+    public function xorDecript($data)
+    {
+        $key = env('QUERY_KEY');
+
+        $data = base64_decode($data);
+        $out = '';
+        $keyLength = strlen($key);
+        for ($i = 0; $i < strlen($data); $i++) {
+            $out .= $data[$i] ^ $key[$i % $keyLength];
+        }
+        return $out;
+    }
+
     public function run($user, $withPermissions = true)
     {
         // check user
@@ -38,13 +51,9 @@ class Query
         // Set the use permissions
         $userPermissions = $user->getPermissions();
 
-        $userPermissions = [
-            'Post:list',
-            'Post:view:title'
-        ];
-
         // Parse the query
-        $requestQuery = (array) json_decode($this->request->input("query"), true);
+        $decryptedJSONString = $this->xorDecript($this->request->input('query'));
+        $requestQuery = (array) json_decode($decryptedJSONString, true);
         $finalResult = [];
 
         // Define need informations
