@@ -24,3 +24,8 @@ Route::middleware('auth:sanctum')->group(function () use ($endpoints) {
     Route::resource('roles', RoleController::class)->only($endpoints);
 
 });
+
+
+Route::get('/posts', function () {
+    return \App\Models\Post::select('user_id', 'title')->get()->groupBy('user_id');
+});

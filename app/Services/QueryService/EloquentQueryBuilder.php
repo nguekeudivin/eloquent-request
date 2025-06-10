@@ -93,13 +93,12 @@ class EloquentQueryBuilder
 
                 $query = $relation->getQuery();
 
+                $definition = (object)$definition;
+
                 if (property_exists($definition, "select")) {
 
                     $this->ensureRelationshipKeys($relation, $query);
                     $query->addSelect(...$definition->select);
-
-                    // $select = array_merge($definition->select, [$relation->getForeignKeyName()]);
-                    // $query->select(...$select);
                 }
 
                 if (property_exists($definition, "clauses")) {
